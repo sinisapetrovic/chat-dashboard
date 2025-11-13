@@ -165,10 +165,9 @@ Absolutely! See [Contributing](#-contributing) below.
 
 ### File Structure
 ```
-chat_dashboard_english_3.html    # Main file (~2,200 lines, 85KB)
+chat_dashboard_english.html      # Main file (~2,200 lines, 85KB)
 chat_dashboard_demo_data.json    # Sample data (30 conversations)
-DEMO_README.md                   # Demo data documentation
-QUICK_FIX_NOTES_WRAP.md          # Known issues & fixes
+README.md                   # Demo data documentation
 ```
 
 ### Browser Compatibility
