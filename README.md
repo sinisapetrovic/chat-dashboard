@@ -336,5 +336,5 @@ Open to suggestions! What would you like to see?
 
 ---
 
-**Version 1.0** | Released November 2024 | [Changelog](CHANGELOG.md)
+**Version 1.0** | Released November 2025 | [Changelog](CHANGELOG.md)
 
