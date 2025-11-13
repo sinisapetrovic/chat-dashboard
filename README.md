@@ -38,7 +38,7 @@ A free, privacy-first tool to organize your AI conversations across multiple pla
 ## 🚀 Quick Start
 
 ### Option 1: Try Online (Recommended)
-**[Launch Dashboard](https://YOUR-USERNAME.github.io/chat-dashboard/chat_dashboard_english_3.html)** *(replace with your actual link)*
+**[[Launch Dashboard](https://YOUR-USERNAME.github.io/chat-dashboard/chat_dashboard_english_3.html)](https://github.com/Tanakasan64/chat-dashboard/blob/main/chat_dashboard_english.html)** 
 
 No download needed - just click and start organizing!
 
