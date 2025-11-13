@@ -235,9 +235,6 @@ Platform detection is automatic when you paste a link!
 
 ## 🐛 Known Issues & Fixes
 
-### Notes don't wrap properly
-See [QUICK_FIX_NOTES_WRAP.md](QUICK_FIX_NOTES_WRAP.md) for the one-line CSS fix.
-
 ### Browser autocomplete interfering with search
 The dashboard automatically disables autocomplete on the search box.
 
@@ -281,8 +278,6 @@ Contributions are welcome! Here's how you can help:
 ---
 
 ## 📝 License
-
-MIT License - See [LICENSE](LICENSE) file for details.
 
 **TL;DR:** Free to use, modify, and distribute. Do whatever you want with it!
 
