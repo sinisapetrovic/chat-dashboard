@@ -1,0 +1,2231 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Chat/Project Dashboard — v1 (Grid + Table)</title>
+  <meta name="color-scheme" content="dark light">
+  <style>
+    :root{
+      /* Increased contrast */
+      --bg:#0a0f1a; --panel:#0e1628; --ink:#f8fafc; --muted:#cbd5e1; --line:#1f2a44;
+      --accent:#22d3ee; --hover:#101a31; --shadow:0 10px 36px rgba(2,6,23,.55);
+      --ok:#10b981; --warn:#f59e0b; --err:#ef4444; --danger:#7f1d1d;
+      --focus: 0 0 0 3px rgba(34,211,238,.35);
+      --table-stripe: rgba(255,255,255,.035);
+    }
+    html:not(.dark){
+      --bg:#f6f7fb; --panel:#ffffff; --ink:#0b1220; --muted:#475569; --line:#d5d9e2;
+      --accent:#0ea5e9; --hover:#eef2f7; --shadow:0 0px 8px rgba(2,6,23,.06); /* Adjusted shadow for light mode */
+      --danger:#fecaca;
+      --table-stripe: rgba(2,6,23,.04);
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{margin:0;font:14px/1.5 system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;color:var(--ink);background:var(--bg)}
+    a{color:inherit;font-weight:inherit}
+    .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+
+    .app{min-height:100%;display:flex}
+
+    /* Sidebar */
+    .sidebar{width:300px;flex:0 0 300px;background:var(--panel);border-right:1px solid var(--line);display:flex;flex-direction:column}
+    .sb-top{padding:12px 16px;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between}
+    .sb-title{font-weight:800;letter-spacing:.2px}
+    .btn{border:1px solid var(--line);background:transparent;color:var(--ink);border-radius:10px;padding:8px 12px;cursor:pointer;transition:.15s ease;font-weight:600}
+    .btn.primary{background:var(--accent);color:#0b1220;border-color:var(--accent)}
+    .btn:hover{background:var(--hover)}
+    .btn.primary:hover{filter:brightness(.95)}
+    .sb-list{padding:8px;overflow:auto;max-height:calc(100vh - 57px);scrollbar-gutter:stable both-edges}
+    .sb-item{width:100%;display:flex;align-items:center;justify-content:space-between;padding:12px 14px;border-radius:12px;border:1px solid transparent}
+    .sb-item span:first-child{color:var(--ink);font-weight:700;letter-spacing:.1px}
+    .sb-item .count{font-size:12px;color:var(--ink);font-weight:600}
+    .sb-item:hover{background:var(--hover)}
+    .sb-item.active{background:linear-gradient(0deg,rgba(34,211,238,.12),rgba(34,211,238,.12));border-color:var(--accent)}
+    .sb-item-right{display:flex;align-items:center;gap:8px}
+    .sb-edit-icon{opacity:0;cursor:pointer;font-size:16px;padding:4px;border-radius:6px;transition:.15s ease}
+    .sb-item:hover .sb-edit-icon{opacity:.6}
+    .sb-edit-icon:hover{opacity:1!important;background:var(--hover)}
+
+    /* Main */
+    .main{flex:1;display:flex;flex-direction:column;min-width:0}
+    .topbar{height:56px;display:flex;gap:8px;align-items:center;padding:8px 12px;background:var(--panel);border-bottom:1px solid var(--line)}
+    .input,select{border:1px solid var(--line);background:transparent;color:var(--ink);border-radius:10px;padding:8px 10px;outline:none}
+    .input::placeholder{color:var(--muted)}
+    .input:focus,select:focus{box-shadow:var(--focus);border-color:var(--accent)}
+    .input.search{flex:1}
+    .grid{padding:16px;display:grid;gap:12px}
+    @media (min-width:640px){.grid{grid-template-columns:repeat(2,1fr)}}
+    @media (min-width:1024px){.grid{grid-template-columns:repeat(3,1fr)}}
+    @media (min-width:1280px){.grid{grid-template-columns:repeat(4,1fr)}}
+    .card{background:var(--panel);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow);display:flex;flex-direction:column;min-width:0}
+    .card-h{padding:10px 12px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center;gap:8px}
+    .pill{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);background:rgba(255,255,255,.04);border-radius:999px;padding:2px 8px;font-size:12px;white-space:nowrap}
+    .muted{color:var(--muted);font-size:12px}
+    .card-b{padding:12px}
+    .card-t{font-weight:800;margin:0 0 6px;overflow:hidden;text-overflow:ellipsis;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;letter-spacing:.1px}
+    .card-f{display:flex;gap:8px;padding:0 12px 12px;flex-wrap:wrap}
+    .link,.ghost{flex:1;text-align:center}
+    .ghost{background:transparent}
+    .danger{color:var(--danger);border-color:var(--danger)}
+    .center{grid-column:1/-1;text-align:center;color:var(--muted);padding:48px 0}
+
+    /* Table view */
+    .table-wrap{padding:12px 16px}
+    .table{width:100%;border-collapse:separate;border-spacing:0;border:1px solid var(--line);border-radius:12px;overflow:hidden;background:var(--panel);box-shadow:var(--shadow)}
+    .table thead th{background:linear-gradient(0deg,rgba(34,211,238,.10),rgba(34,211,238,.10));text-align:left;font-weight:normal;font-size:14px;padding:10px 12px;border-bottom:1px solid var(--line)}
+    .table tbody td{padding:10px 12px;border-bottom:1px solid var(--line);vertical-align:top;font-size:14px;font-weight:normal}
+    .table tbody tr:nth-child(odd){background:var(--table-stripe)}
+    .table tbody tr{cursor:grab;transition:.15s ease}
+    .table tbody tr:active{cursor:grabbing}
+    .table tbody tr:hover{background:var(--hover)}
+    .table tbody tr.dragging{opacity:.5;background:var(--accent);cursor:grabbing}
+    .table tbody tr.drag-over{border-top:3px solid var(--accent)}
+    .table tbody button,.table tbody a{cursor:pointer}
+    .t-title{font-weight:normal}
+    .t-notes{color:var(--muted);max-width:540px;white-space:nowrap;text-overflow:ellipsis;overflow:hidden;font-weight:normal}
+/* Notes Word Wrap Fix */
+.t-notes {
+  white-space: normal !important;
+  word-wrap: break-word !important;
+  overflow-wrap: break-word !important;
+}
+    .t-actions{display:flex;gap:8px}
+    .t-actions .btn{font-weight:normal;font-size:14px}
+    .tag{display:inline-block;border:1px solid var(--line);border-radius:999px;padding:2px 8px;font-size:14px;font-weight:normal}
+    
+    /* Platform badge */
+    .platform-badge{display:inline-flex;align-items:center;gap:4px;border:1px solid;border-radius:6px;padding:3px 8px;font-size:12px;font-weight:600;white-space:nowrap;margin-right:8px;vertical-align:middle}
+
+    /* Modal */
+    .modal{position:fixed;inset:0;background:rgba(0,0,0,.45);backdrop-filter:blur(3px);display:flex;align-items:center;justify-content:center;padding:20px;z-index:1000;animation:fadeIn 200ms ease}
+    .modal[hidden]{display:none}
+    @keyframes fadeIn{from{opacity:0}to{opacity:1}}
+    @keyframes slideUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+    .modal-box{width:100%;max-width:820px;background:var(--panel);border:1px solid var(--line);border-radius:16px;box-shadow:0 20px 60px rgba(0,0,0,.25);animation:slideUp 250ms ease}
+    .modal-box-form{max-width:620px}
+    .modal-h{display:flex;align-items:center;justify-content:space-between;padding:20px 24px;border-bottom:1px solid var(--line)}
+    .modal-title{font-size:20px;font-weight:700;letter-spacing:-.02em}
+    .modal-b{padding:24px}
+    
+    /* Form styles */
+    .form-section{margin-bottom:28px}
+    .form-section:last-of-type{margin-bottom:24px}
+    .section-header{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-bottom:16px;padding-bottom:8px;border-bottom:1px solid var(--line)}
+    
+    .form-group{margin-bottom:16px}
+    .form-group:last-child{margin-bottom:0}
+    .form-row{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+    
+    .form-label{display:block;font-size:13px;font-weight:600;margin-bottom:8px;color:var(--ink)}
+    .required{color:var(--accent);font-weight:700}
+    .optional{font-size:12px;font-weight:400;color:var(--muted)}
+    
+    .form-input{width:100%;border:1.5px solid var(--line);background:var(--panel);color:var(--ink);border-radius:12px;padding:12px 16px;font-size:14px;line-height:1.6;outline:none;transition:all .2s ease;font-family:inherit}
+    .form-input::placeholder{color:var(--muted);font-style:italic;opacity:.7}
+    .form-input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(34,211,238,.12);background:var(--bg)}
+    .form-input:hover:not(:focus){border-color:var(--accent);opacity:.8}
+    .form-input:disabled{opacity:.5;cursor:not-allowed;background:var(--hover)}
+    
+    .form-select{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23cbd5e1' d='M6 9L1 4h10z'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 14px center;padding-right:40px;cursor:pointer}
+    
+    .form-textarea{resize:vertical;min-height:120px;font-family:inherit;line-height:1.7}
+    .char-counter{position:absolute;bottom:10px;right:12px;font-size:11px;color:var(--muted);background:var(--panel);padding:2px 6px;border-radius:4px;pointer-events:none}
+    
+    .form-actions{display:flex;gap:12px;align-items:center;padding-top:20px;border-top:1px solid var(--line)}
+    
+    .form-hint{margin-top:16px;padding:12px;background:var(--hover);border-radius:8px;font-size:12px;text-align:center}
+    
+    /* Buttons */
+    .btn-icon{background:transparent;border:none;color:var(--muted);font-size:20px;width:32px;height:32px;display:flex;align-items:center;justify-content:center;border-radius:8px;cursor:pointer;transition:.15s ease}
+    .btn-icon:hover{background:var(--hover);color:var(--ink)}
+    
+    .btn-icon-square{background:var(--panel);border:1.5px solid var(--line);color:var(--ink);font-size:16px;width:44px;height:44px;display:flex;align-items:center;justify-content:center;border-radius:10px;cursor:pointer;transition:.15s ease;flex-shrink:0}
+    .btn-icon-square:hover{border-color:var(--accent);background:var(--hover);transform:scale(1.05)}
+    
+    .form-actions .btn,
+    .modal-b .btn{border:1.5px solid var(--line);background:var(--panel);color:var(--ink);border-radius:10px;padding:12px 20px;cursor:pointer;font-weight:600;font-size:14px;transition:.15s ease;white-space:nowrap}
+    .form-actions .btn:hover,
+    .modal-b .btn:hover{background:var(--hover);border-color:var(--accent);transform:translateY(-1px)}
+    
+    .form-actions .btn-primary,
+    .modal-b .btn-primary{background:var(--accent);color:#0b1220;border-color:var(--accent)}
+    .form-actions .btn-primary:hover,
+    .modal-b .btn-primary:hover{background:var(--accent);filter:brightness(.95);border-color:var(--accent)}
+    
+    .form-actions .btn-delete,
+    .modal-b .btn-delete{background:transparent;color:#ef4444;border-color:#ef4444}
+    .form-actions .btn-delete:hover,
+    .modal-b .btn-delete:hover{background:#ef4444;color:#fff;border-color:#ef4444}
+    
+    .row{display:grid;gap:12px}
+    @media(min-width:760px){.row.cols-3{grid-template-columns:2fr 1fr 1fr}}
+    .sep{height:1px;background:var(--line);margin:8px 0}
+    .accent{color:var(--accent)}
+    .switch{border:1px solid var(--line);padding:6px 10px;border-radius:999px}
+
+    /* Status dots (kept for semantic use) */
+    .dot{display:inline-block;width:8px;height:8px;border-radius:999px}
+    .s-done{background:var(--ok)} .s-active{background:#16a34a} .s-progress{background:#f59e0b}
+    .s-revise{background:#22d3ee} .s-export{background:#0ea5e9} .s-issue{background:#ef4444} .s-review{background:#8b5cf6}
+  </style>
+
+<script src="https://cdn.jsdelivr.net/npm/fuse.js@7"></script>
+
+<style>
+  /* Notes (Markdown) styling */
+  .notes ul {
+    margin-top: 0.5rem;
+    padding-left: 1.5rem;
+    list-style-type: disc;
+  }
+  .notes ul li {
+    margin-bottom: 0.25rem;
+    line-height: 1.4;
+  }
+  .notes p { margin: 0.25rem 0; }
+  .notes code { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; padding: 0 0.25rem; border-radius: 4px; background: rgba(0,0,0,0.06); }
+  .notes mark { padding: 0 2px; border-radius: 2px; }
+</style>
+
+</head>
+<body>
+<div class="app" id="app" aria-busy="false">
+  <aside class="sidebar" aria-label="Categories">
+    <div class="sb-top">
+      <div class="sb-title">📂 Projects / Chats</div>
+      <div style="display:flex;gap:8px;align-items:center">
+        <button class="btn switch" id="themeBtn" title="Theme (D/L)" aria-pressed="true">🌗</button>
+        <button class="btn" id="addCatBtn" title="Add category">+ Cat.</button>
+      </div>
+    </div>
+    <div class="sb-list" id="catList"></div>
+  </aside>
+
+  <main class="main">
+    <div class="topbar" role="region" aria-label="Filters and actions">
+      <input class="input search" id="search" placeholder="Search by title, note, or link…  ( / focus )" aria-label="Search" />
+      <select id="statusFilter" title="Filter by status" aria-label="Status filter"></select>
+      <select id="platformFilter" title="Filter by AI platform" aria-label="Platform filter"></select>
+      <button class="btn" id="viewToggle" title="Toggle view (G = Grid, T = Table)">🔁 View: <span id="viewLabel">Cards</span></button>
+      <button class="btn primary" id="newBtn" title="New entry (N)">+ New Entry</button>
+      <button class="btn" id="exportBtn" title="Export to JSON">Export</button>
+      <button class="btn" id="importBtn" title="Import from JSON">Import</button>
+    </div>
+
+    <div id="contentArea"></div>
+  </main>
+</div>
+
+<div class="modal" id="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle" hidden>
+  <div class="modal-box modal-box-form">
+    <div class="modal-h">
+      <div id="modalTitle" class="modal-title">New Entry</div>
+      <button class="btn-icon" id="closeModal" title="Close (Esc)" aria-label="Close">✕</button>
+    </div>
+    <div class="modal-b">
+      <form id="form" class="form" novalidate>
+        
+        <div class="form-section">
+          <div class="section-header">BASIC INFO</div>
+          
+          <div class="form-group">
+            <label for="fTitle" class="form-label">Title <span class="required">*</span></label>
+            <input class="form-input" id="fTitle" placeholder="e.g. [REG] GP-T analysis – compliance with Instruction" required />
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="fCategory" class="form-label">Category</label>
+              <select class="form-input form-select" id="fCategory"></select>
+            </div>
+            <div class="form-group">
+              <label for="fStatus" class="form-label">Status</label>
+              <select class="form-input form-select" id="fStatus"></select>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-section">
+          <div class="section-header">LINK AND RESOURCES</div>
+          
+          <div class="form-group">
+            <label for="fLink" class="form-label">Link <span class="optional">(optional)</span></label>
+            <div style="display:flex;gap:8px;align-items:center">
+              <input class="form-input" id="fLink" placeholder="https://chatgpt.com/c/..." style="flex:1" />
+              <button type="button" class="btn-icon-square" id="openLinkBtn" title="Open link" style="display:none">↗</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-section">
+          <div class="section-header">NOTES</div>
+          
+          <div class="form-group">
+            <label for="fNotes" class="form-label">Description and notes <span class="optional">(optional)</span></label>
+            <div style="position:relative">
+              <textarea class="form-input form-textarea" id="fNotes" placeholder="Summary, what needs to be done, deadlines, references..." rows="4"></textarea>
+              <div class="char-counter" id="charCounter">0</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-actions">
+          <button type="button" class="btn btn-delete" id="deleteBtn" style="display:none">🗑️ Delete Entry</button>
+          <div style="flex:1"></div>
+          <button type="button" class="btn" id="cancelBtn">Cancel</button>
+          <button type="submit" class="btn btn-primary" id="saveBtn">💾 Save</button>
+        </div>
+      </form>
+      
+      <div class="form-hint">
+        <span class="muted">💡 Shortcuts:</span> 
+        <strong>Esc</strong> close • 
+        <strong>Ctrl+Enter</strong> save
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal" id="importModal" role="dialog" aria-modal="true" aria-labelledby="importModalTitle" hidden>
+  <div class="modal-box" style="max-width:520px">
+    <div class="modal-h">
+      <div id="importModalTitle" style="font-weight:800">Data Import Method</div>
+    </div>
+    <div class="modal-b">
+      <div style="margin-bottom:20px;padding:12px;background:var(--hover);border:1px solid var(--line);border-radius:8px">
+        <div style="font-weight:600;margin-bottom:4px">📦 Import contains: <span id="importCount" class="accent">0</span> entries</div>
+      </div>
+      
+      <div style="display:flex;flex-direction:column;gap:16px;margin-bottom:20px">
+        <div style="padding:12px;border:2px solid var(--line);border-radius:10px">
+          <div style="font-weight:700;margin-bottom:4px">🔹 ADD</div>
+          <div class="muted">Adds new entries to the existing list. Does not allow duplicates (same title and category).</div>
+        </div>
+        
+        <div style="padding:12px;border:2px solid var(--line);border-radius:10px">
+          <div style="font-weight:700;margin-bottom:4px">🔄 REPLACE</div>
+          <div class="muted">Deletes all existing entries and replaces them with the imported data.</div>
+        </div>
+        
+        <div style="padding:12px;border:2px solid var(--line);border-radius:10px">
+          <div style="font-weight:700;margin-bottom:4px">❌ CANCEL</div>
+          <div class="muted">Cancel the import and close this window.</div>
+        </div>
+      </div>
+      
+      <div style="display:flex;justify-content:center;gap:12px">
+        <button type="button" class="btn primary" id="importAddBtn" style="flex:1">🔹 Add</button>
+        <button type="button" class="btn" id="importReplaceBtn" style="background:#f59e0b;color:#fff;border-color:#f59e0b;flex:1" onmouseover="this.style.background='#d97706'" onmouseout="this.style.background='#f59e0b'">🔄 Replace</button>
+        <button type="button" class="btn" id="importCancelBtn" style="flex:1">❌ Cancel</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal" id="categoryModal" role="dialog" aria-modal="true" aria-labelledby="categoryModalTitle" hidden>
+  <div class="modal-box modal-box-form" style="max-width:500px">
+    <div class="modal-h">
+      <div id="categoryModalTitle" class="modal-title">New Category</div>
+      <button class="btn-icon" id="closeCategoryModal" title="Close (Esc)" aria-label="Close">✕</button>
+    </div>
+    <div class="modal-b">
+      <form id="categoryForm" class="form" novalidate>
+        
+        <div class="form-section">
+          <div class="section-header">CATEGORY DETAILS</div>
+          
+          <div class="form-group">
+            <label for="catEmoji" class="form-label">Emoji icon <span class="required">*</span></label>
+            <select class="form-input form-select" id="catEmoji" required>
+              <option value="">Select emoji...</option>
+!-- 📊 DATA & ANALYTICS -->
+<option value="📊">📊 Chart / Analytics</option>
+<option value="📈">📈 Growth / Trending Up</option>
+<option value="📉">📉 Decline / Trending Down</option>
+<option value="💹">💹 Financial Chart</option>
+<option value="🔢">🔢 Numbers / Data</option>
+<option value="📐">📐 Metrics / Measurement</option>
+
+<!-- 💼 BUSINESS & WORK -->
+<option value="💼">💼 Business / Briefcase</option>
+<option value="🏢">🏢 Office / Corporate</option>
+<option value="💰">💰 Finance / Money</option>
+<option value="💳">💳 Payment / Transaction</option>
+<option value="🤝">🤝 Partnership / Deal</option>
+<option value="📞">📞 Communication</option>
+<option value="📧">📧 Email / Messages</option>
+
+<!-- 🎯 GOALS & PRODUCTIVITY -->
+<option value="🎯">🎯 Target / Goal</option>
+<option value="✅">✅ Completed / Done</option>
+<option value="⏰">⏰ Time / Deadline</option>
+<option value="📅">📅 Calendar / Schedule</option>
+<option value="📌">📌 Pinned / Important</option>
+<option value="🔔">🔔 Reminder / Alert</option>
+<option value="⚡">⚡ Fast / Energy / Priority</option>
+
+<!-- 💻 TECH & DEVELOPMENT -->
+<option value="💻">💻 Computer / Development</option>
+<option value="⌨️">⌨️ Coding / Programming</option>
+<option value="🖥️">🖥️ Desktop / System</option>
+<option value="📱">📱 Mobile / App</option>
+<option value="🌐">🌐 Web / Internet</option>
+<option value="🔧">🔧 Tools / Settings</option>
+<option value="⚙️">⚙️ Configuration / System</option>
+<option value="🛠️">🛠️ Build / Maintenance</option>
+<option value="🔌">🔌 Plugin / Integration</option>
+<option value="💾">💾 Storage / Database</option>
+<option value="🗄️">🗄️ Server / Archive</option>
+<option value="🔐">🔐 Security / Password</option>
+<option value="🔒">🔒 Locked / Private</option>
+<option value="🔓">🔓 Unlocked / Public</option>
+
+<!-- 🚀 PROJECT & LAUNCH -->
+<option value="🚀">🚀 Launch / Startup</option>
+<option value="🎪">🎪 Event / Campaign</option>
+<option value="🎬">🎬 Production / Video</option>
+<option value="🎙️">🎙️ Podcast / Audio</option>
+<option value="📢">📢 Announcement / Marketing</option>
+<option value="📣">📣 Promotion / Broadcast</option>
+
+<!-- 🎨 CREATIVE & DESIGN -->
+<option value="🎨">🎨 Design / Art / Creative</option>
+<option value="🖌️">🖌️ Illustration / Drawing</option>
+<option value="🖼️">🖼️ Gallery / Images</option>
+<option value="📸">📸 Photography</option>
+<option value="🎭">🎭 Theater / Performance</option>
+<option value="🎵">🎵 Music / Audio</option>
+<option value="🎬">🎬 Video / Film</option>
+<option value="✏️">✏️ Draft / Writing</option>
+<option value="✍️">✍️ Writing / Editing</option>
+
+<!-- 📚 LEARNING & EDUCATION -->
+<option value="📚">📚 Books / Library / Learning</option>
+<option value="📖">📖 Reading / Study</option>
+<option value="📝">📝 Notes / Documentation</option>
+<option value="📄">📄 Document / Paper</option>
+<option value="🎓">🎓 Education / Graduate</option>
+<option value="🏫">🏫 School / Academy</option>
+<option value="👨‍🏫">👨‍🏫 Teaching / Training</option>
+<option value="🧪">🧪 Science / Experiment</option>
+<option value="🔬">🔬 Research / Lab</option>
+
+<!-- 💡 IDEAS & INNOVATION -->
+<option value="💡">💡 Idea / Innovation</option>
+<option value="🧠">🧠 Brain / Thinking</option>
+<option value="🤔">🤔 Question / Wondering</option>
+<option value="💭">💭 Thought / Concept</option>
+<option value="🔍">🔍 Search / Investigation</option>
+<option value="🔎">🔎 Details / Deep Dive</option>
+
+<!-- 🌟 QUALITY & SUCCESS -->
+<option value="🌟">🌟 Star / Favorite / Featured</option>
+<option value="⭐">⭐ Rating / Excellence</option>
+<option value="🏆">🏆 Winner / Achievement</option>
+<option value="🥇">🥇 First Place / Best</option>
+<option value="💎">💎 Premium / Valuable</option>
+<option value="🔥">🔥 Hot / Trending</option>
+<option value="👑">👑 Premium / Elite</option>
+
+<!-- 🗂️ ORGANIZATION -->
+<option value="📁">📁 Folder / Files</option>
+<option value="📂">📂 Open Folder</option>
+<option value="🗂️">🗂️ Card Index / Categories</option>
+<option value="🗃️">🗃️ Filing Cabinet</option>
+<option value="📋">📋 Clipboard / Checklist</option>
+<option value="📑">📑 Tabs / Sections</option>
+<option value="🏷️">🏷️ Tag / Label</option>
+<option value="🔖">🔖 Bookmark / Saved</option>
+
+<!-- 🌍 LOCATION & TRAVEL -->
+<option value="🌍">🌍 World / Global</option>
+<option value="🌎">🌎 Americas</option>
+<option value="🌏">🌏 Asia/Pacific</option>
+<option value="🗺️">🗺️ Map / Geography</option>
+<option value="📍">📍 Location / Pin</option>
+<option value="✈️">✈️ Travel / Flight</option>
+<option value="🏠">🏠 Home / Local</option>
+<option value="🏙️">🏙️ City / Urban</option>
+
+<!-- 👥 PEOPLE & TEAM -->
+<option value="👤">👤 User / Person</option>
+<option value="👥">👥 Team / Group</option>
+<option value="👨‍💼">👨‍💼 Professional</option>
+<option value="👩‍💻">👩‍💻 Developer / Tech</option>
+<option value="🤖">🤖 AI / Bot / Automation</option>
+<option value="👨‍🎨">👨‍🎨 Artist / Designer</option>
+
+<!-- ⚠️ STATUS & ALERTS -->
+<option value="✔️">✔️ Check / Verified</option>
+<option value="❌">❌ Error / Declined</option>
+<option value="⚠️">⚠️ Warning / Caution</option>
+<option value="🚨">🚨 Alert / Critical</option>
+<option value="🔴">🔴 Red / Stop / Urgent</option>
+<option value="🟡">🟡 Yellow / Pending</option>
+<option value="🟢">🟢 Green / Active / Live</option>
+<option value="🔵">🔵 Blue / Info</option>
+<option value="⚪">⚪ Neutral / Default</option>
+
+<!-- 🎮 HOBBIES & LEISURE -->
+<option value="🎮">🎮 Gaming</option>
+<option value="🎯">🎯 Sports / Activity</option>
+<option value="⚽">⚽ Football / Sports</option>
+<option value="🎸">🎸 Music / Guitar</option>
+<option value="📷">📷 Photography</option>
+<option value="🍳">🍳 Cooking / Recipes</option>
+<option value="🌱">🌱 Gardening / Growth</option>
+<option value="🏃">🏃 Fitness / Running</option>
+
+<!-- 💬 COMMUNICATION -->
+<option value="💬">💬 Chat / Conversation</option>
+<option value="💭">💭 Comment / Feedback</option>
+<option value="📨">📨 Incoming Message</option>
+<option value="📬">📬 Mailbox</option>
+<option value="🗨️">🗨️ Dialogue / Discussion</option>
+
+<!-- 🔄 PROCESS & WORKFLOW -->
+<option value="🔄">🔄 Refresh / Repeat</option>
+<option value="♻️">♻️ Recycle / Reuse</option>
+<option value="🔁">🔁 Loop / Continuous</option>
+<option value="⏭️">⏭️ Next / Skip</option>
+<option value="⏸️">⏸️ Pause</option>
+<option value="▶️">▶️ Play / Start</option>
+<option value="⏹️">⏹️ Stop / End</option>
+
+<!-- 🌈 COLORS & MARKERS -->
+<option value="🟥">🟥 Red Square</option>
+<option value="🟧">🟧 Orange Square</option>
+<option value="🟨">🟨 Yellow Square</option>
+<option value="🟩">🟩 Green Square</option>
+<option value="🟦">🟦 Blue Square</option>
+<option value="🟪">🟪 Purple Square</option>
+
+<!-- 🎁 MISC USEFUL -->
+<option value="🎁">🎁 Gift / Bonus</option>
+<option value="🔗">🔗 Link / Connection</option>
+<option value="📦">📦 Package / Product</option>
+<option value="🧩">🧩 Puzzle / Component</option>
+<option value="🎲">🎲 Random / Dice</option>
+<option value="♾️">♾️ Infinite / Unlimited</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="catKey" class="form-label">Short Key <span class="required">*</span></label>
+            <input class="form-input" id="catKey" placeholder="e.g. GIS, HR, OPS (2-5 characters)" maxlength="5" required style="text-transform:uppercase" />
+          </div>
+
+          <div class="form-group">
+            <label for="catLabel" class="form-label">Category Name <span class="required">*</span></label>
+            <input class="form-input" id="catLabel" placeholder="e.g. Geoinfo Systems, Human Resources" required />
+          </div>
+        </div>
+
+        <div class="form-actions">
+          <button type="button" class="btn btn-delete" id="deleteCategoryBtn" style="display:none">🗑️ Delete Category</button>
+          <div style="flex:1"></div>
+          <button type="button" class="btn" id="cancelCategoryBtn">Cancel</button>
+          <button type="submit" class="btn btn-primary" id="saveCategoryBtn">💾 Save</button>
+        </div>
+      </form>
+      
+      <div class="form-hint" id="categoryHint">
+        <span class="muted">💡 Shortcut:</span> <strong>Esc</strong> close
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+  'use strict';
+
+  // ====== CONSTS ======
+  const STORAGE_KEY = 'sinisa_chat_sidebar_v3_html';
+  const THEME_KEY = 'sinisa_theme_dark';
+  const VIEW_KEY = 'sinisa_view_mode';
+  const DEFAULT_CATEGORIES = [
+    { key: 'REG', label: 'RAK / Regulatory', emoji: '📋' },
+    { key: 'AI',  label: 'AI & Automation', emoji: '🤖' },
+    { key: 'FIN', label: 'Finance / Private', emoji: '💰' },
+    { key: 'LIT', label: 'Literature & Translation', emoji: '📚' },
+    { key: 'TQC', label: 'Total Quality Control', emoji: '✅' },
+  ];
+const STATUSES = [
+  // Active states
+  { key:'active',    label:'Active',           icon:'🟢' },
+  { key:'progress',  label:'In Progress',      icon:'🟡' },
+  { key:'pending',   label:'On Hold / Paused', icon:'⏸️' },
+  
+  // Review states  
+  { key:'review',    label:'Needs Review',     icon:'🔍' },
+  { key:'revise',    label:'Needs Revision',   icon:'🔄' },
+  
+  // Completion states
+  { key:'done',      label:'Completed',        icon:'✅' },
+  { key:'archived',  label:'Archived',         icon:'📦' },
+  
+  // Action needed
+  { key:'important', label:'Important',        icon:'⭐' },
+  { key:'followup',  label:'Follow Up',        icon:'🔔' },
+  
+  // Problem state
+  { key:'issue',     label:'Problematic',      icon:'🟥' },
+];
+  
+const AI_PLATFORMS = [
+  // Major conversational AI
+  { key: 'chatgpt', name: 'ChatGPT', icon: '🤖', color: '#10a37f', patterns: ['chatgpt.com', 'chat.openai.com'] },
+  { key: 'claude', name: 'Claude', icon: '🟣', color: '#cc9b7a', patterns: ['claude.ai'] },
+  { key: 'gemini', name: 'Gemini', icon: '✨', color: '#4285f4', patterns: ['gemini.google.com', 'bard.google.com'] },
+  { key: 'copilot', name: 'Copilot', icon: '🪟', color: '#0078d4', patterns: ['copilot.microsoft.com', 'bing.com/chat'] },
+  { key: 'grok', name: 'Grok', icon: '❌', color: '#1da1f2', patterns: ['x.ai', 'grok.x.ai'] },
+  
+  // Search & Research AI
+  { key: 'perplexity', name: 'Perplexity', icon: '🔍', color: '#20808d', patterns: ['perplexity.ai'] },
+  { key: 'you', name: 'You.com', icon: '🔎', color: '#4a90e2', patterns: ['you.com'] },
+  { key: 'phind', name: 'Phind', icon: '💡', color: '#ff6b6b', patterns: ['phind.com'] },
+  { key: 'notebooklm', name: 'NotebookLM', icon: '📓', color: '#fbbc04', patterns: ['notebooklm.google.com'] },
+  
+  // Open source & Community
+  { key: 'huggingchat', name: 'HuggingChat', icon: '🤗', color: '#ffcc00', patterns: ['huggingface.co/chat'] },
+  { key: 'poe', name: 'Poe', icon: '🎭', color: '#e74c3c', patterns: ['poe.com'] },
+  { key: 'character', name: 'Character.AI', icon: '👤', color: '#8b5cf6', patterns: ['character.ai', 'beta.character.ai'] },
+  { key: 'llamachat', name: 'Llama Chat', icon: '🦙', color: '#0668e1', patterns: ['llama.meta.ai', 'meta.ai'] },
+  
+  // Coding assistants
+  { key: 'cursor', name: 'Cursor', icon: '⌨️', color: '#000000', patterns: ['cursor.sh', 'cursor.com'] },
+  { key: 'codeium', name: 'Codeium', icon: '💻', color: '#09b6a2', patterns: ['codeium.com'] },
+  { key: 'tabnine', name: 'Tabnine', icon: '🔷', color: '#5f4bb6', patterns: ['tabnine.com'] },
+  
+  // Specialized AI
+  { key: 'pi', name: 'Pi', icon: '🥧', color: '#ff6b9d', patterns: ['pi.ai', 'heypi.com'] },
+  { key: 'lechat', name: 'Le Chat (Mistral)', icon: '🇫🇷', color: '#f97316', patterns: ['chat.mistral.ai', 'mistral.ai'] },
+  { key: 'deepseek', name: 'DeepSeek', icon: '🌊', color: '#0ea5e9', patterns: ['chat.deepseek.com', 'deepseek.com'] },
+  { key: 'cohere', name: 'Cohere', icon: '🔶', color: '#d946ef', patterns: ['coral.cohere.com', 'cohere.ai'] },
+  
+  // Writing & Content AI
+  { key: 'jasper', name: 'Jasper', icon: '✍️', color: '#8b5cf6', patterns: ['jasper.ai', 'app.jasper.ai'] },
+  { key: 'writesonic', name: 'Writesonic', icon: '📝', color: '#6366f1', patterns: ['writesonic.com', 'app.writesonic.com'] },
+  { key: 'chatsonic', name: 'ChatSonic', icon: '💬', color: '#8b5cf6', patterns: ['chatsonic.com', 'app.writesonic.com/chatsonic'] },
+  { key: 'copy', name: 'Copy.ai', icon: '📄', color: '#10b981', patterns: ['copy.ai', 'app.copy.ai'] },
+  
+  // Enterprise & Specialized
+  { key: 'anthropic', name: 'Anthropic Console', icon: '🏢', color: '#cc9b7a', patterns: ['console.anthropic.com'] },
+  { key: 'openai-playground', name: 'OpenAI Playground', icon: '🎮', color: '#10a37f', patterns: ['platform.openai.com/playground'] },
+];
+
+  // Detect AI platform from URL
+  function detectPlatform(url) {
+    if(!url) return null;
+    const urlLower = url.toLowerCase();
+    for(const platform of AI_PLATFORMS) {
+      if(platform.patterns.some(pattern => urlLower.includes(pattern))) {
+        return platform;
+      }
+    }
+    return null;
+  }
+
+  // Get platform badge HTML
+  function getPlatformBadge(url) {
+    const platform = detectPlatform(url);
+    if(!platform) return '';
+    return `<span class="platform-badge" style="background:${platform.color}15;color:${platform.color};border-color:${platform.color}40" title="${platform.name}">${platform.icon} ${platform.name}</span>`;
+  }
+
+  // ====== STATE ======
+  let state = {
+    items: [],
+    categories: [],
+    activeCat: 'ALL',
+    statusFilter: 'ALL',
+    platformFilter: 'ALL',
+    query: '',
+    view: 'cards' // 'cards' | 'table'
+  };
+  let editId = null;
+
+  // ====== ELEMENTS ======
+  const catList = document.getElementById('catList');
+  const search  = document.getElementById('search');
+  const statusFilter = document.getElementById('statusFilter');
+  const platformFilter = document.getElementById('platformFilter');
+  const newBtn  = document.getElementById('newBtn');
+  const exportBtn = document.getElementById('exportBtn');
+  const importFile = document.getElementById('importFile');
+  const addCatBtn = document.getElementById('addCatBtn');
+  const themeBtn = document.getElementById('themeBtn');
+  const viewToggle = document.getElementById('viewToggle');
+  const viewLabel = document.getElementById('viewLabel');
+  const contentArea = document.getElementById('contentArea');
+
+  const modal = document.getElementById('modal');
+  const modalTitle = document.getElementById('modalTitle');
+  const closeModal = document.getElementById('closeModal');
+  const cancelBtn = document.getElementById('cancelBtn');
+  const deleteBtn = document.getElementById('deleteBtn');
+  const openLinkBtn = document.getElementById('openLinkBtn');
+  const charCounter = document.getElementById('charCounter');
+  const form = document.getElementById('form');
+  const fTitle = document.getElementById('fTitle');
+  const fCategory = document.getElementById('fCategory');
+  const fStatus = document.getElementById('fStatus');
+  const fLink = document.getElementById('fLink');
+  const fNotes = document.getElementById('fNotes');
+
+  // Import modal
+  const importModal = document.getElementById('importModal');
+  const importCount = document.getElementById('importCount');
+  const importAddBtn = document.getElementById('importAddBtn');
+  const importReplaceBtn = document.getElementById('importReplaceBtn');
+  const importCancelBtn = document.getElementById('importCancelBtn');
+  let pendingImportData = null;
+
+  // Category modal
+  const categoryModal = document.getElementById('categoryModal');
+  const categoryModalTitle = document.getElementById('categoryModalTitle');
+  const categoryForm = document.getElementById('categoryForm');
+  const closeCategoryModal = document.getElementById('closeCategoryModal');
+  const cancelCategoryBtn = document.getElementById('cancelCategoryBtn');
+  const saveCategoryBtn = document.getElementById('saveCategoryBtn');
+  const deleteCategoryBtn = document.getElementById('deleteCategoryBtn');
+  const catEmoji = document.getElementById('catEmoji');
+  const catKey = document.getElementById('catKey');
+  const catLabel = document.getElementById('catLabel');
+  const categoryHint = document.getElementById('categoryHint');
+
+  // ====== THEME ======
+  try {
+    const theme = localStorage.getItem(THEME_KEY);
+    if(theme === 'dark'){
+      document.documentElement.classList.add('dark');
+      themeBtn.setAttribute('aria-pressed','true');
+    } else {
+      document.documentElement.classList.remove('dark');
+      themeBtn.setAttribute('aria-pressed','false');
+    }
+  } catch(e){}
+  themeBtn.addEventListener('click', ()=>{
+    const isDark = document.documentElement.classList.toggle('dark');
+    try{ localStorage.setItem(THEME_KEY, isDark ? 'dark' : 'light'); }catch(e){}
+    themeBtn.setAttribute('aria-pressed', String(isDark));
+  });
+
+  // ====== LOAD/SAVE ======
+  function seed(){
+    return [
+      mkItem('FUK Processes and Risks – GP-00/GP-33','REG','active','', 'Compliance analysis, control points, deadlines'),
+      mkItem('Translation Pipeline (ENG→HR) – glossary + polish','AI','active','', 'Segmented, cost control, paragraph validation'),
+      mkItem('Savings and Expense Restructuring','FIN','done','', 'Projection until 07/2029, free savings'),
+      mkItem('Book of Dust – chapters and notes','LIT','progress','', 'Style polish, marked paragraphs'),
+      mkItem('TQC – Transparency and Anti-Hallucination Control','TQC','review','', 'Mandatory references: document + article/clause/point'),
+    ];
+  }
+  function load(){
+    try{
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if(raw){
+        const parsed = JSON.parse(raw);
+        state.items = Array.isArray(parsed.items) ? parsed.items : seed();
+        state.categories = parsed.categories?.length ? parsed.categories : [...DEFAULT_CATEGORIES];
+        
+        // Migrate categories to add emoji if missing
+        state.categories = state.categories.map(cat => {
+          if(!cat.emoji){
+            const defaultCat = DEFAULT_CATEGORIES.find(dc => dc.key === cat.key);
+            return {...cat, emoji: defaultCat?.emoji || '📂'};
+          }
+          return cat;
+        });
+      } else {
+        state.items = seed();
+        state.categories = [...DEFAULT_CATEGORIES];
+      }
+    }catch(e){
+      state.items = seed();
+      state.categories = [...DEFAULT_CATEGORIES];
+    }
+    try{
+      const v = localStorage.getItem(VIEW_KEY);
+      if(v==='table' || v==='cards') state.view = v;
+    }catch(e){}
+
+    // Global reference for Fuse.js
+    window.appState = state; 
+  }
+  function save(){
+    try { 
+        localStorage.setItem(STORAGE_KEY, JSON.stringify({ items: state.items, categories: state.categories })); 
+        // Trigger Fuse.js update
+        if(window.setFuseCollection) window.setFuseCollection(); 
+    } catch(e){}
+  }
+  function saveView(){
+    try { localStorage.setItem(VIEW_KEY, state.view); } catch(e){}
+  }
+
+  // ====== HELPERS ======
+  function mkId(){ return (crypto.randomUUID ? crypto.randomUUID() : 'id_'+Math.random().toString(16).slice(2)); }
+  function mkItem(title, category, status, link, notes){ return { id: mkId(), title, category, status, link: link||'', notes: notes||'', updatedAt: Date.now() }; }
+  function formatDate(ts){ try{ const d=new Date(ts); return d.toLocaleDateString(undefined,{year:'numeric',month:'2-digit',day:'2-digit'});}catch{return ''} }
+  function labelForStatus(key){ const s=STATUSES.find(x=>x.key===key); return s?s.label:key; }
+  function iconForStatus(key){ const s=STATUSES.find(x=>x.key===key); return s?s.icon:''; }
+  function labelForCat(key){ const c=state.categories.find(x=>x.key===key) || DEFAULT_CATEGORIES.find(x=>x.key===key); return c?c.label:key; }
+  function emojiForCat(key){ const c=state.categories.find(x=>x.key===key) || DEFAULT_CATEGORIES.find(x=>x.key===key); return c?.emoji || '📂'; }
+  function badgeForCat(key){ return emojiForCat(key); }
+
+  // ====== RENDER ======
+  function render(){ renderCategories(); renderFilters(); renderContent(); save(); }
+
+  function renderCategories(){
+    const counts = countByCat();
+    catList.innerHTML = '';
+    catList.appendChild(catButton('ALL','🌐 All', state.items.length, state.activeCat==='ALL'));
+    state.categories.forEach(c=>{
+      catList.appendChild(catButton(c.key, badgeForCat(c.key)+' '+c.label, counts[c.key]||0, state.activeCat===c.key));
+    });
+  }
+  function catButton(key,label,count,active){
+    const b = document.createElement('button');
+    b.type='button';
+    b.className = 'sb-item'+(active?' active':'');
+    b.setAttribute('aria-pressed', active ? 'true':'false');
+    
+    const leftSpan = document.createElement('span');
+    leftSpan.textContent = label;
+    
+    const rightDiv = document.createElement('div');
+    rightDiv.className = 'sb-item-right';
+    
+    // Add edit icon for all categories except "ALL"
+    if(key !== 'ALL'){
+      const editIcon = document.createElement('span');
+      editIcon.className = 'sb-edit-icon';
+      editIcon.textContent = '✏️';
+      editIcon.title = 'Edit category';
+      editIcon.addEventListener('click', (e)=>{
+        e.stopPropagation(); // Prevent category selection
+        openCategoryModalForEdit(key);
+      });
+      rightDiv.appendChild(editIcon);
+    }
+    
+    const countSpan = document.createElement('span');
+    countSpan.className = 'count';
+    countSpan.textContent = count;
+    rightDiv.appendChild(countSpan);
+    
+    b.appendChild(leftSpan);
+    b.appendChild(rightDiv);
+    
+    b.addEventListener('click', ()=>{ state.activeCat = key; render(); });
+    return b;
+  }
+  function countByCat(){
+    const m={};
+    state.categories.forEach(c=>m[c.key]=0);
+    state.items.forEach(it=>{ m[it.category]=(m[it.category]||0)+1; });
+    return m;
+  }
+
+  function renderFilters(){
+    // status dropdown
+    statusFilter.innerHTML = '';
+    const optAll = document.createElement('option');
+    optAll.value='ALL'; optAll.textContent='All Statuses'; statusFilter.appendChild(optAll);
+    STATUSES.forEach(s=>{
+      const o=document.createElement('option');
+      o.value=s.key; o.textContent=`${s.icon} ${s.label}`; statusFilter.appendChild(o);
+    });
+    statusFilter.value = state.statusFilter;
+    
+    // platform dropdown
+    platformFilter.innerHTML = '';
+    const optAllPlatforms = document.createElement('option');
+    optAllPlatforms.value='ALL'; optAllPlatforms.textContent='All Platforms'; platformFilter.appendChild(optAllPlatforms);
+    AI_PLATFORMS.forEach(p=>{
+      const o=document.createElement('option');
+      o.value=p.key; o.textContent=`${p.icon} ${p.name}`; platformFilter.appendChild(o);
+    });
+    platformFilter.value = state.platformFilter;
+    
+    viewLabel.textContent = state.view === 'table' ? 'Table' : 'Cards';
+  }
+
+  function filteredItems(){
+    const q = state.query.trim(); 
+
+    let listToFilter = state.items;
+
+    // 1. Fuzzy Search (if query exists and Fuse is ready)
+    if (q && window.__fuseReady && window.fuse) {
+        // Perform fuzzy search on the entire dataset
+        const fuseResults = window.fuse.search(q);
+        // Map Fuse.js results back to the original items
+        listToFilter = fuseResults.map(r => r.item);
+    }
+    
+    // 2. Filter (Category, Status, Platform) on the result set (or all items if no search)
+    return listToFilter
+      .filter(it=> state.activeCat==='ALL' ? true : it.category===state.activeCat)
+      .filter(it=> state.statusFilter==='ALL' ? true : it.status===state.statusFilter)
+      .filter(it=> {
+        if(state.platformFilter === 'ALL') return true;
+        const platform = detectPlatform(it.link);
+        return platform && platform.key === state.platformFilter;
+      });
+  }
+
+  function renderContent(){
+    contentArea.innerHTML = '';
+    if(state.view === 'table'){
+      renderTable();
+    } else {
+      renderCards();
+    }
+  }
+
+  // ----- Cards view -----
+  function renderCards(){
+    const list = filteredItems();
+    const grid = document.createElement('div'); grid.className='grid';
+    if(list.length===0){
+      const d=document.createElement('div'); d.className='center'; d.textContent='No entries to display. Adjust filters or add a new entry.'; grid.appendChild(d);
+    } else {
+      list.forEach(it=> grid.appendChild(card(it)) );
+    }
+    contentArea.appendChild(grid);
+  }
+  function card(it){
+    const el = document.createElement('article'); el.className='card';
+    const h = document.createElement('div'); h.className='card-h';
+    const left = document.createElement('span'); left.className='pill';
+    left.innerHTML = `<span title="${labelForStatus(it.status)}">${iconForStatus(it.status)}</span>
+                      <span class="pill-cat" title="${labelForCat(it.category)}">${emojiForCat(it.category)} ${it.category}</span>`;
+    const date = document.createElement('span'); date.className='muted'; date.textContent = formatDate(it.updatedAt);
+    h.append(left,date);
+
+    const b = document.createElement('div'); b.className='card-b';
+    const t = document.createElement('h3'); t.className='card-t'; t.title = it.title; t.textContent = it.title; b.appendChild(t);
+    
+    // Add platform badge if link exists
+    if(it.link){
+      const platformBadge = getPlatformBadge(it.link);
+      if(platformBadge){
+        const badgeDiv = document.createElement('div');
+        badgeDiv.style.marginBottom = '8px';
+        badgeDiv.innerHTML = platformBadge;
+        b.appendChild(badgeDiv);
+      }
+    }
+    
+    if(it.notes){
+      const p=document.createElement('p'); p.className='muted notes'; p.style.whiteSpace='pre-wrap'; p.textContent=it.notes; p.setAttribute('data-raw-notes', it.notes); b.appendChild(p);
+    }
+
+    const f = document.createElement('div'); f.className='card-f';
+    if(it.link){
+      const a=document.createElement('a'); a.className='btn primary link'; a.href=it.link; a.target='_blank'; a.rel='noreferrer'; a.textContent='Open ↗'; f.appendChild(a);
+    } else {
+      const add=document.createElement('button'); add.type='button'; add.className='btn ghost'; add.textContent='Add link';
+      add.addEventListener('click',()=>{
+        const link=prompt('Paste the URL of the chat or document (optional):', it.link||'');
+        if(link!==null){ it.link=link.trim(); it.updatedAt=Date.now(); render(); }
+      });
+      f.appendChild(add);
+    }
+    const edit=document.createElement('button'); edit.type='button'; edit.className='btn ghost'; edit.textContent='Edit';
+    edit.addEventListener('click',()=>openEdit(it.id)); f.appendChild(edit);
+    const del=document.createElement('button'); del.type='button'; del.className='btn ghost danger'; del.textContent='Delete';
+    del.addEventListener('click',()=>{ if(confirm('Delete entry?')){ state.items = state.items.filter(x=>x.id!==it.id); render(); }}); f.appendChild(del);
+
+    el.append(h,b,f); return el;
+  }
+
+  // ----- Table view -----
+  function renderTable(){
+    const list = filteredItems();
+    const wrap = document.createElement('div'); wrap.className='table-wrap';
+    if(list.length===0){
+      const d=document.createElement('div'); d.className='center'; d.textContent='No entries to display. Adjust filters or add a new entry.'; wrap.appendChild(d);
+      contentArea.appendChild(wrap); return;
+    }
+    const table = document.createElement('table'); table.className='table';
+    table.innerHTML = `
+      <thead>
+        <tr>
+          <th style="width:40px;text-align:center" title="Drag row to change order">⋮⋮</th>
+          <th>Title</th>
+          <th>Category</th>
+          <th>Status</th>
+          <th>Date</th>
+          <th>Link</th>
+          <th>Note</th>
+          <th style="width:160px">Actions</th>
+        </tr>
+      </thead>
+      <tbody></tbody>`;
+    const tbody = table.querySelector('tbody');
+    list.forEach((it, idx)=>{
+      const tr = document.createElement('tr');
+      tr.draggable = true;
+      tr.setAttribute('data-id', it.id);
+      tr.innerHTML = `
+        <td style="text-align:center;cursor:grab;user-select:none;color:var(--muted);font-size:16px" title="Drag to reorder">⋮⋮</td>
+        <td class="t-title" title="${escapeHtml(it.title)}">${escapeHtml(it.title)}</td>
+        <td><span class="tag" title="${escapeHtml(labelForCat(it.category))}">${emojiForCat(it.category)} ${it.category}</span></td>
+        <td><span class="tag" title="${escapeHtml(labelForStatus(it.status))}">${iconForStatus(it.status)} ${labelForStatus(it.status)}</span></td>
+        <td>${formatDate(it.updatedAt)}</td>
+        <td>${it.link ? `${getPlatformBadge(it.link)} <a href="${escapeAttr(it.link)}" target="_blank" rel="noreferrer">↗ Open</a>` : '<span class="muted">—</span>'}</td>
+        <td class="t-notes" title="${escapeHtml(it.notes || '')}">${escapeHtml(it.notes || '')}</td>
+        <td>
+          <div class="t-actions">
+            <button class="btn" data-act="edit" data-id="${it.id}">Edit</button>
+            <button class="btn danger" data-act="del" data-id="${it.id}">Delete</button>
+          </div>
+        </td>`;
+      tbody.appendChild(tr);
+    });
+    wrap.appendChild(table);
+    contentArea.appendChild(wrap);
+
+    // delegate actions
+    wrap.addEventListener('click', (e)=>{
+      const btn = e.target.closest('button[data-act]');
+      if(!btn) return;
+      const id = btn.getAttribute('data-id');
+      const act = btn.getAttribute('data-act');
+      if(act==='edit'){ openEdit(id); }
+      if(act==='del'){
+        if(confirm('Delete entry?')){
+          state.items = state.items.filter(x=>x.id!==id);
+          render();
+        }
+      }
+    });
+
+    // open link on row click
+    wrap.addEventListener('click', (e)=>{
+      // ignore if clicked on button or link
+      if(e.target.closest('button') || e.target.closest('a')) return;
+      
+      const row = e.target.closest('tr');
+      if(!row || row.parentElement.tagName !== 'TBODY') return;
+      
+      // find the item by row index
+      const rowIndex = Array.from(row.parentElement.children).indexOf(row);
+      const item = list[rowIndex];
+      
+      if(item?.link){
+        window.open(item.link, '_blank', 'noreferrer');
+      }
+    });
+
+    // drag and drop for reordering
+    let draggedRow = null;
+    
+    tbody.addEventListener('dragstart', (e)=>{
+      const row = e.target.closest('tr');
+      if(!row) return;
+      draggedRow = row;
+      row.classList.add('dragging');
+      e.dataTransfer.effectAllowed = 'move';
+    });
+
+    tbody.addEventListener('dragend', (e)=>{
+      const row = e.target.closest('tr');
+      if(row) row.classList.remove('dragging');
+      document.querySelectorAll('tr.drag-over').forEach(r => r.classList.remove('drag-over'));
+    });
+
+    tbody.addEventListener('dragover', (e)=>{
+      e.preventDefault();
+      const row = e.target.closest('tr');
+      if(!row || row === draggedRow) return;
+      e.dataTransfer.dropEffect = 'move';
+      
+      // visual indicator
+      document.querySelectorAll('tr.drag-over').forEach(r => r.classList.remove('drag-over'));
+      row.classList.add('drag-over');
+    });
+
+    tbody.addEventListener('drop', (e)=>{
+      e.preventDefault();
+      const targetRow = e.target.closest('tr');
+      if(!targetRow || targetRow === draggedRow) return;
+      
+      // get IDs
+      const draggedId = draggedRow.getAttribute('data-id');
+      const targetId = targetRow.getAttribute('data-id');
+      
+      // find indices in state.items
+      const allItems = [...state.items];
+      const draggedIndex = allItems.findIndex(item => item.id === draggedId);
+      const targetIndex = allItems.findIndex(item => item.id === targetId);
+      
+      if(draggedIndex === -1 || targetIndex === -1) return;
+      
+      // remove dragged item
+      const [draggedItem] = allItems.splice(draggedIndex, 1);
+      
+      // recalculate target index after removal
+      const newTargetIndex = draggedIndex < targetIndex ? targetIndex - 1 : targetIndex;
+      
+      // insert at new position
+      allItems.splice(newTargetIndex, 0, draggedItem);
+      
+      state.items = allItems;
+      
+      // save and re-render
+      save();
+      render();
+    });
+  }
+
+  function escapeHtml(s){ return String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+  function escapeAttr(s){ return escapeHtml(s).replace(/"/g,'&quot;'); }
+
+  // ====== MODAL ======
+  function openCreate(){
+    editId=null;
+    modalTitle.textContent='New Entry';
+    deleteBtn.style.display = 'none'; // Hide delete button for new items
+    fillForm({ title:'', category: state.categories[0]?.key||'REG', status:'active', link:'', notes:'' });
+    showModal();
+  }
+  function openEdit(id){
+    editId=id;
+    modalTitle.textContent='Edit Entry';
+    deleteBtn.style.display = 'flex'; // Show delete button for existing items
+    const it = state.items.find(x=>x.id===id);
+    fillForm(it);
+    showModal();
+  }
+  function showModal(){
+    modal.hidden=false; modal.setAttribute('aria-hidden','false');
+    setTimeout(()=>fTitle.focus(), 0);
+    document.addEventListener('keydown', escListener);
+    document.addEventListener('focus', trapFocus, true);
+  }
+  function closeModalFn(){
+    modal.hidden=true; modal.setAttribute('aria-hidden','true');
+    document.removeEventListener('keydown', escListener);
+    document.removeEventListener('focus', trapFocus, true);
+    newBtn.focus();
+  }
+  function escListener(e){
+    if(e.key==='Escape'){ e.preventDefault(); closeModalFn(); }
+    if((e.ctrlKey||e.metaKey) && e.key==='Enter'){ e.preventDefault(); form.requestSubmit(); }
+  }
+  function trapFocus(e){
+    if(!modal.hidden && !modal.contains(e.target)){
+      e.stopPropagation();
+      (modal.querySelector('input,textarea,select,button')||modal).focus();
+    }
+  }
+  modal.addEventListener('click',(e)=>{ if(e.target===modal) closeModalFn(); });
+
+  function fillForm(it){
+    // fill category
+    fCategory.innerHTML='';
+    state.categories.forEach(c=>{
+      const o=document.createElement('option');
+      const emoji = c.emoji || '📂';
+      o.value=c.key; o.textContent=`${emoji} ${c.key} — ${c.label}`; fCategory.appendChild(o);
+    });
+    // fill status
+    fStatus.innerHTML='';
+    STATUSES.forEach(s=>{
+      const o=document.createElement('option'); o.value=s.key; o.textContent=`${s.icon} ${s.label}`; fStatus.appendChild(o);
+    });
+    // values
+    fTitle.value = it?.title||'';
+    fCategory.value = it?.category||state.categories[0]?.key||'REG';
+    fStatus.value = it?.status||'active';
+    fLink.value = it?.link||'';
+    fNotes.value = it?.notes||'';
+    
+    // Update character counter
+    charCounter.textContent = fNotes.value.length;
+    
+    // Show/hide open link button
+    const link = fLink.value.trim();
+    if(link && (link.startsWith('http://') || link.startsWith('https://'))){
+      openLinkBtn.style.display = 'flex';
+    } else {
+      openLinkBtn.style.display = 'none';
+    }
+  }
+  function saveItem(){
+    const title=fTitle.value.trim();
+    if(!title){ alert('Title is required.'); fTitle.focus(); return; }
+    const item = {
+      title,
+      category:fCategory.value,
+      status:fStatus.value,
+      link:fLink.value.trim(),
+      notes:fNotes.value.trim()
+    };
+    if(editId){
+      state.items = state.items.map(x=> x.id===editId ? { ...x, ...item, updatedAt:Date.now() } : x);
+    } else {
+      state.items = [{ ...item, id:mkId(), updatedAt:Date.now() }, ...state.items];
+    }
+    closeModalFn(); render();
+  }
+
+  // ====== EVENTS ======
+  search.addEventListener('input', e=>{ state.query = e.target.value; render(); });
+  statusFilter.addEventListener('change', e=>{ state.statusFilter = e.target.value; render(); });
+  platformFilter.addEventListener('change', e=>{ state.platformFilter = e.target.value; render(); });
+  newBtn.addEventListener('click', openCreate);
+  document.getElementById('exportBtn').addEventListener('click', async ()=>{
+    const data = JSON.stringify({items:state.items, categories:state.categories}, null, 2);
+    const filename = 'chat-dashboard-'+new Date().toISOString().slice(0,10)+'.json';
+    
+    // Try modern File System Access API first
+    if('showSaveFilePicker' in window){
+      try{
+        const handle = await window.showSaveFilePicker({
+          suggestedName: filename,
+          types: [{
+            description: 'JSON File',
+            accept: {'application/json': ['.json']}
+          }]
+        });
+        const writable = await handle.createWritable();
+        await writable.write(data);
+        await writable.close();
+        return;
+      }catch(err){
+        // User cancelled or error - fall back to old method
+        if(err.name !== 'AbortError'){
+          console.error('Save error:', err);
+        }
+      }
+    }
+    
+    // Fallback: traditional download method
+    const blob = new Blob([data], {type:'application/json'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+  });
+  document.getElementById('importBtn').addEventListener('click', async ()=>{
+    let fileContent;
+    
+    // Try modern File System Access API first
+    if('showOpenFilePicker' in window){
+      try{
+        const [fileHandle] = await window.showOpenFilePicker({
+          types: [{
+            description: 'JSON File',
+            accept: {'application/json': ['.json']}
+          }],
+          multiple: false
+        });
+        const file = await fileHandle.getFile();
+        fileContent = await file.text();
+      }catch(err){
+        // User cancelled
+        if(err.name === 'AbortError') return;
+        console.error('Open file error:', err);
+        return;
+      }
+    } else {
+      // Fallback: use traditional file input
+      const input = document.createElement('input');
+      input.type = 'file';
+      input.accept = 'application/json';
+      
+      const filePromise = new Promise((resolve, reject) => {
+        input.onchange = async (e) => {
+          const file = e.target.files?.[0];
+          if(!file) return reject('No file selected');
+          const reader = new FileReader();
+          reader.onload = ev => resolve(ev.target.result);
+          reader.onerror = () => reject('Error reading file');
+          reader.readAsText(file);
+        };
+        input.oncancel = () => reject('User cancelled');
+      });
+      
+      input.click();
+      
+      try{
+        fileContent = await filePromise;
+      }catch(err){
+        return; // User cancelled or error
+      }
+    }
+    
+    // Process the imported file
+    try{
+      const parsed = JSON.parse(fileContent);
+      if(!parsed || !parsed.items) throw new Error('Invalid JSON.');
+      
+      // Store data and show modal
+      pendingImportData = parsed;
+      importCount.textContent = parsed.items.length;
+      importModal.hidden = false;
+      importModal.setAttribute('aria-hidden', 'false');
+      
+    }catch(err){ 
+      alert('Import Error: ' + err.message); 
+    }
+  });
+
+  // Import modal actions
+  function closeImportModal(){
+    importModal.hidden = true;
+    importModal.setAttribute('aria-hidden', 'true');
+    pendingImportData = null;
+  }
+
+  importCancelBtn.addEventListener('click', closeImportModal);
+  
+  importModal.addEventListener('click', (e)=>{
+    if(e.target === importModal) closeImportModal();
+  });
+
+  importAddBtn.addEventListener('click', ()=>{
+    if(!pendingImportData) return;
+    
+    // MERGE: add new items, skip duplicates
+    let added = 0;
+    let skipped = 0;
+    
+    pendingImportData.items.forEach(newItem => {
+      // Check for duplicates by ID or by title+category
+      const isDuplicate = state.items.some(existing => 
+        existing.id === newItem.id || 
+        (existing.title.toLowerCase() === newItem.title.toLowerCase() && 
+         existing.category === newItem.category)
+      );
+      
+      if(!isDuplicate){
+        state.items.push(newItem);
+        added++;
+      } else {
+        skipped++;
+      }
+    });
+    
+    // Merge categories
+    if(pendingImportData.categories?.length){
+      pendingImportData.categories.forEach(newCat => {
+        if(!state.categories.find(c => c.key === newCat.key)){
+          state.categories.push(newCat);
+        }
+      });
+    }
+    
+    closeImportModal();
+    save();
+    render();
+    alert(`Import finished!\nAdded: ${added}\nSkipped (duplicates): ${skipped}`);
+  });
+
+  importReplaceBtn.addEventListener('click', ()=>{
+    if(!pendingImportData) return;
+    
+    // REPLACE: replace all
+    state.items = pendingImportData.items;
+    state.categories = pendingImportData.categories?.length ? pendingImportData.categories : [...DEFAULT_CATEGORIES];
+    
+    closeImportModal();
+    save();
+    render();
+    alert('All data has been replaced with the imported data.');
+  });
+  addCatBtn.addEventListener('click', openCategoryModal);
+
+  // ====== CATEGORY MODAL ======
+  let editCategoryKey = null; // Track if we're editing a category
+  
+  function openCategoryModal(){
+    editCategoryKey = null; // Reset edit mode
+    categoryModalTitle.textContent = 'New Category';
+    categoryHint.innerHTML = '<span class="muted">💡 Shortcut:</span> <strong>Esc</strong> close';
+    deleteCategoryBtn.style.display = 'none'; // Hide delete button for new categories
+    catEmoji.value = '';
+    catKey.value = '';
+    catKey.disabled = false; // Enable key input for new categories
+    catLabel.value = '';
+    categoryModal.hidden = false;
+    categoryModal.setAttribute('aria-hidden', 'false');
+    setTimeout(() => catEmoji.focus(), 0);
+  }
+  
+  function openCategoryModalForEdit(key){
+    const category = state.categories.find(c => c.key === key);
+    if(!category) return;
+    
+    editCategoryKey = key; // Set edit mode
+    categoryModalTitle.textContent = 'Edit Category';
+    
+    // Count items in this category
+    const itemCount = state.items.filter(item => item.category === key).length;
+    
+    // Show hint about KEY and item count
+    categoryHint.innerHTML = `<span class="muted">ℹ️ The KEY (code) remains the same to avoid corrupting existing entries. This category has <strong>${itemCount}</strong> entries.</span>`;
+    
+    deleteCategoryBtn.style.display = 'flex'; // Show delete button for existing categories
+    catEmoji.value = category.emoji || '';
+    catKey.value = category.key;
+    catKey.disabled = true; // Disable key input when editing
+    catLabel.value = category.label || '';
+    categoryModal.hidden = false;
+    categoryModal.setAttribute('aria-hidden', 'false');
+    setTimeout(() => catEmoji.focus(), 0);
+  }
+
+  function closeCategoryModalFn(){
+    categoryModal.hidden = true;
+    categoryModal.setAttribute('aria-hidden', 'true');
+    addCatBtn.focus();
+  }
+
+  closeCategoryModal.addEventListener('click', closeCategoryModalFn);
+  cancelCategoryBtn.addEventListener('click', closeCategoryModalFn);
+
+  categoryModal.addEventListener('click', (e) => {
+    if(e.target === categoryModal) closeCategoryModalFn();
+  });
+
+  // Auto-uppercase for category key
+  catKey.addEventListener('input', (e) => {
+    e.target.value = e.target.value.toUpperCase();
+  });
+
+  categoryForm.addEventListener('submit', (e) => {
+    e.preventDefault();
+    
+    const emoji = catEmoji.value.trim();
+    const key = catKey.value.trim().toUpperCase();
+    const label = catLabel.value.trim();
+
+    if(!emoji){
+      alert('Select an emoji icon.');
+      catEmoji.focus();
+      return;
+    }
+
+    if(!key || key.length < 2){
+      alert('Enter a short key (at least 2 characters).');
+      catKey.focus();
+      return;
+    }
+
+    if(!label){
+      alert('Enter the category name.');
+      catLabel.focus();
+      return;
+    }
+
+    if(editCategoryKey){
+      // EDIT MODE: Update existing category
+      const category = state.categories.find(c => c.key === editCategoryKey);
+      if(category){
+        category.emoji = emoji;
+        category.label = label;
+        // KEY remains the same
+      }
+    } else {
+      // CREATE MODE: Add new category
+      if(state.categories.find(c => c.key === key)){
+        alert('A category with this key already exists.');
+        catKey.focus();
+        return;
+      }
+      state.categories = [...state.categories, {key, label, emoji}];
+    }
+    
+    closeCategoryModalFn();
+    save();
+    render();
+  });
+
+  // Delete category button
+  deleteCategoryBtn.addEventListener('click', () => {
+    if(!editCategoryKey) return;
+    
+    // Check if this is the last category
+    if(state.categories.length <= 1){
+      alert('You cannot delete the last category. At least one category must remain.');
+      return;
+    }
+    
+    // Count items in this category
+    const itemCount = state.items.filter(item => item.category === editCategoryKey).length;
+    const category = state.categories.find(c => c.key === editCategoryKey);
+    const categoryLabel = category ? `${category.emoji} ${category.label}` : editCategoryKey;
+    
+    // Confirmation message
+    let confirmMsg = `Are you sure you want to delete the category "${categoryLabel}"?\n\n`;
+    if(itemCount > 0){
+      confirmMsg += `⚠️ WARNING: This will also delete all ${itemCount} entries in this category!\n\n`;
+    } else {
+      confirmMsg += `This category is empty (no entries).\n\n`;
+    }
+    confirmMsg += `This action cannot be undone.`;
+    
+    if(confirm(confirmMsg)){
+      // Remove all items in this category
+      state.items = state.items.filter(item => item.category !== editCategoryKey);
+      
+      // Remove the category
+      state.categories = state.categories.filter(c => c.key !== editCategoryKey);
+      
+      // If active category was deleted, switch to ALL
+      if(state.activeCat === editCategoryKey){
+        state.activeCat = 'ALL';
+      }
+      
+      closeCategoryModalFn();
+      save();
+      render();
+    }
+  });
+
+
+  // View toggle
+  function toggleView(){
+    state.view = state.view === 'table' ? 'cards' : 'table';
+    viewLabel.textContent = state.view === 'table' ? 'Table' : 'Cards';
+    saveView(); render();
+  }
+  viewToggle.addEventListener('click', toggleView);
+
+  // keyboard shortcuts
+  document.addEventListener('keydown', (e)=>{
+    const transferModal = document.getElementById('transferModal');
+    
+    // DO NOT TRIGGER SHORTCUTS IF FOCUS IS IN INPUT/TEXTAREA/SELECT
+    const activeEl = document.activeElement;
+    const isInInputField = activeEl && (
+      activeEl.tagName === 'INPUT' || 
+      activeEl.tagName === 'TEXTAREA' || 
+      activeEl.tagName === 'SELECT'
+    );
+    
+    // close import modal
+    if(e.key==='Escape' && !importModal.hidden){
+      e.preventDefault(); closeImportModal(); return;
+    }
+    // close category modal
+    if(e.key==='Escape' && !categoryModal.hidden){
+      e.preventDefault(); closeCategoryModalFn(); return;
+    }
+    // close transfer modal - handled by transfer modal's own ESC handler
+    if(e.key==='Escape' && transferModal && !transferModal.hidden){
+      // Transfer modal has its own ESC handler, do nothing here
+      return;
+    }
+    
+    // DO NOT TRIGGER SHORTCUTS IF ANY MODAL IS OPEN or if focus is in an input field
+    if(!modal.hidden || !importModal.hidden || !categoryModal.hidden || (transferModal && !transferModal.hidden) || isInInputField){
+      return; // Break if any modal is open or focus is in an input field
+    }
+    
+    // focus search
+    if(e.key==='/' && document.activeElement !== search){
+      e.preventDefault(); search.focus(); return;
+    }
+    // new item
+    if((e.key==='n' || e.key==='N') && !e.ctrlKey && !e.metaKey){
+      e.preventDefault(); openCreate(); return;
+    }
+    // toggle view
+    if((e.key==='g' || e.key==='G')){ e.preventDefault(); state.view='cards'; saveView(); render(); }
+    if((e.key==='t' || e.key==='T')){ e.preventDefault(); state.view='table'; saveView(); render(); }
+  });
+
+  // Modal form
+  document.getElementById('closeModal').addEventListener('click', closeModalFn);
+  document.getElementById('cancelBtn').addEventListener('click', closeModalFn);
+  form.addEventListener('submit', (e)=>{ e.preventDefault(); saveItem(); });
+
+  // Character counter for notes
+  fNotes.addEventListener('input', ()=>{
+    charCounter.textContent = fNotes.value.length;
+  });
+
+  // Link validation and open button
+  fLink.addEventListener('input', ()=>{
+    const link = fLink.value.trim();
+    if(link && (link.startsWith('http://') || link.startsWith('https://'))){
+      openLinkBtn.style.display = 'flex';
+    } else {
+      openLinkBtn.style.display = 'none';
+    }
+  });
+
+  openLinkBtn.addEventListener('click', ()=>{
+    const link = fLink.value.trim();
+    if(link) window.open(link, '_blank', 'noreferrer');
+  });
+
+  // Delete button
+  deleteBtn.addEventListener('click', ()=>{
+    if(!editId) return;
+    if(confirm('Are you sure you want to delete this entry?\n\nThis action cannot be undone.')){
+      state.items = state.items.filter(x => x.id !== editId);
+      save();
+      closeModalFn();
+      render();
+    }
+  });
+
+  // ====== START ======
+  load();
+  render();
+
+  // ====== EXPOSE API for external modules (Transfer) ======
+  window.app = window.app || {};
+  window.app.state = state;
+  window.app.saveState = save;
+  window.app.renderAll = render;
+  window.app.detectPlatform = detectPlatform;
+  window.app.mkId = mkId;
+  
+  // Allow adding items "from outside"
+  window.addItem = function(item){
+    state.items = [item, ...state.items];
+    save();
+    render();
+  };
+})();
+</script>
+<style>
+  /* Transfer modal styles - uses the same pattern as existing modals */
+  #transferModal.modal { z-index: 1001; } /* Slightly higher z-index than other modals */
+  
+  .transfer-dialog-box {
+    width: 100%;
+    max-width: 560px;
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    box-shadow: 0 20px 60px rgba(0,0,0,.25);
+    animation: slideUp 250ms ease;
+  }
+  
+  .transfer-btn {
+    display:inline-flex; align-items:center; gap:.5rem;
+    padding:.55rem .8rem; border:1px solid var(--line);
+    border-radius:.6rem; background:var(--panel); cursor:pointer;
+    font:inherit; color:var(--ink); font-weight:600;
+    transition: .15s ease;
+  }
+  .transfer-btn:hover { background:var(--hover); border-color:var(--accent); }
+  
+  .transfer-modal-header { 
+    padding: 20px 24px; 
+    border-bottom: 1px solid var(--line); 
+    font-weight: 700; 
+    font-size: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .transfer-modal-body { padding: 24px; display: grid; gap: 16px; }
+  .transfer-modal-footer { 
+    padding: 20px 24px; 
+    border-top: 1px solid var(--line); 
+    display:flex; 
+    gap:12px; 
+    justify-content:flex-end; 
+  }
+  .transfer-field { display:grid; gap:8px; }
+  .transfer-field label { 
+    font-size: 13px; 
+    font-weight: 600; 
+    color: var(--ink); 
+  }
+  .transfer-field input[type="text"],
+  .transfer-field input[type="url"],
+  .transfer-field select {
+    width: 100%; 
+    padding: 12px 16px; 
+    border: 1.5px solid var(--line); 
+    border-radius: 12px; 
+    font: inherit;
+    background: var(--panel);
+    color: var(--ink);
+    outline: none;
+    transition: all .2s ease;
+  }
+  .transfer-field textarea {
+    width: 100%; 
+    padding: 12px 16px; 
+    border: 1.5px solid var(--line); 
+    border-radius: 12px; 
+    font: inherit;
+    background: var(--panel);
+    color: var(--ink);
+    outline: none;
+    transition: all .2s ease;
+    resize: vertical;
+    min-height: 80px;
+  }
+  .transfer-field input:focus,
+  .transfer-field select:focus,
+  .transfer-field textarea:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(34,211,238,.12);
+  }
+  .transfer-badge { font-size: 12px; color: var(--muted); }
+</style>
+
+<div class="modal" id="transferModal" role="dialog" aria-modal="true" aria-labelledby="transferTitle" hidden>
+  <div class="transfer-dialog-box">
+    <div class="transfer-modal-header">
+      <span id="transferTitle">Add AI Chat</span>
+      <button class="btn-icon" id="closeTransferModal" title="Close (Esc)" aria-label="Close">✕</button>
+    </div>
+    <form id="transferForm">
+      <div class="transfer-modal-body">
+        <div class="transfer-field">
+          <label for="tf_link">AI Chat Link (ChatGPT, Claude, Gemini...)</label>
+          <input id="tf_link" name="link" type="url" required placeholder="https://chat.openai.com/c/... or https://claude.ai/chat/...">
+          <small class="transfer-badge" id="tf_platform_preview"></small>
+        </div>
+        <div class="transfer-field">
+          <label for="tf_title">Title</label>
+          <input id="tf_title" name="title" type="text" placeholder="AI Conversation – 2025-11-04">
+        </div>
+        <div class="transfer-field">
+          <label for="tf_category">Category</label>
+          <select id="tf_category" name="category" class="form-input"></select>
+        </div>
+        <div class="transfer-field">
+          <label for="tf_status">Status</label>
+          <select id="tf_status" name="status" class="form-input">
+            <option value="review">review</option>
+            <option value="active">active</option>
+            <option value="done">done</option>
+          </select>
+        </div>
+        <div class="transfer-field">
+          <label for="tf_notes">Notes (optional)</label>
+          <textarea id="tf_notes" name="notes" rows="3" placeholder="Short notes about this conversation…"></textarea>
+        </div>
+      </div>
+      <div class="transfer-modal-footer">
+        <button type="button" id="transferCancel" class="btn">Cancel</button>
+        <button type="submit" id="transferSave" class="btn primary">💾 Save</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+(function(){
+  // 1) Find the search field and reduce its size + insert the button in the same line
+  document.addEventListener('DOMContentLoaded', () => {
+    // Check if the button already exists
+    if (document.getElementById('openTransferBtn')) {
+      console.log('Transfer button already exists, skipping creation');
+      return;
+    }
+    
+    const searchEl = document.querySelector(
+      'input[type="search"], input[name="search"], #searchByTitle, #search, input[placeholder*="Search"], input[placeholder*="search"], input[placeholder*="title"]'
+    );
+    if (searchEl) {
+      // reduce the visual width of the search field
+      searchEl.style.maxWidth = '280px';
+      searchEl.style.width = '280px';
+      searchEl.style.flex = '0 0 auto';
+      // insert the button right after the search
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'transfer-btn';
+      btn.id = 'openTransferBtn';
+      btn.innerHTML = '🔗 Add AI Chat';
+      searchEl.insertAdjacentElement('afterend', btn);
+      btn.addEventListener('click', openTransferDialog);
+      console.log('Transfer button created');
+    }
+  });
+
+  // 2) Minimal platform detection (if app already has detectPlatform, we use it)
+  function detectPlatformLocal(url){
+    const u = (url||'').toLowerCase();
+    if (u.includes('chat.openai.com')) return { key: 'chatgpt', label: 'ChatGPT' };
+    if (u.includes('claude.ai')) return { key: 'claude', label: 'Claude' };
+    if (u.includes('gemini.google.com') || u.includes('ai.google')) return { key: 'gemini', label: 'Gemini' };
+    return { key: 'web', label: 'Web' };
+  }
+
+  // 3) Reference to app state / methods (flexible)
+  function getAppRefs(){
+    const refs = {};
+    refs.state = window.state || window.app?.state || null;
+    refs.addItem = (typeof window.addItem === 'function') ? window.addItem : null;
+    refs.saveState = window.saveState || window.app?.saveState || null;
+    refs.render = window.renderAll || window.renderApp || window.render || null;
+    refs.getCategories = function(){
+      // Try reading from the app; if not available, try from localStorage; fallback: ["AI"]
+      const st = refs.state;
+      if (st?.categories && Array.isArray(st.categories)) return st.categories;
+      try {
+        const ls = localStorage.getItem('chatDashboardCategories') || localStorage.getItem('categories');
+        if (ls) return JSON.parse(ls);
+      } catch(e){}
+      return [{ key: 'AI', label: 'AI' }];
+    };
+    refs.ensureCategory = function(key, label){
+      const st = refs.state;
+      if (st?.categories && Array.isArray(st.categories)) {
+        const exists = st.categories.some(c => (c.key||c.label) === key || c.key === key);
+        if (!exists) st.categories.push({ key: key, label: label || key });
+      } else {
+        // localStorage fallback
+        let cats = refs.getCategories();
+        const exists = cats.some(c => (c.key||c.label) === key || c.key === key);
+        if (!exists) cats.push({ key: key, label: label || key });
+        try {
+          localStorage.setItem('chatDashboardCategories', JSON.stringify(cats));
+        } catch(e){}
+      }
+    };
+    refs.pushItem = function(item){
+      if (refs.addItem) { refs.addItem(item); return; }
+      const st = refs.state;
+      if (st && Array.isArray(st.items)) {
+        st.items.push(item);
+        if (refs.saveState) refs.saveState();
+        if (refs.render) refs.render();
+
+      } else {
+        // total fallback (if app has no state): save to LS under a helper key
+        const k = 'chatDashboard_fallback_items';
+        let arr = [];
+        try { arr = JSON.parse(localStorage.getItem(k) || '[]'); } catch(e){}
+        arr.push(item);
+        localStorage.setItem(k, JSON.stringify(arr));
+        alert('Item saved to fallback localStorage (app state not detected).');
+      }
+    };
+    return refs;
+  }
+
+  // 4) Opening the modal and populating the select
+  let currentEscHandler = null; // Store reference to the current ESC handler
+  let currentBackdropHandler = null; // Store reference to the backdrop click handler
+  
+  function openTransferDialog(){
+    console.log('openTransferDialog called');
+    
+    const modal = document.getElementById('transferModal');
+    if (!modal) {
+      console.error('transferModal element does not exist!');
+      return;
+    }
+    
+    // Check if the modal is already open
+    if (!modal.hidden) {
+      console.log('Modal is already open');
+      return;
+    }
+    
+    const f = document.getElementById('transferForm');
+    const elLink = document.getElementById('tf_link');
+    const elTitle = document.getElementById('tf_title');
+    const elCat = document.getElementById('tf_category');
+    const elStatus = document.getElementById('tf_status');
+    const elNotes = document.getElementById('tf_notes');
+    const badge = document.getElementById('tf_platform_preview');
+
+    // Populate categories from the application
+    const { getCategories } = getAppRefs();
+    const cats = getCategories();
+    elCat.innerHTML = '';
+    cats.forEach(c => {
+      const key = c.key || c.label || String(c);
+      const opt = document.createElement('option');
+      opt.value = key;
+      opt.textContent = c.label || key;
+      elCat.appendChild(opt);
+    });
+
+    // Default values
+    elLink.value = '';
+    elTitle.value = `AI Conversation – ${new Date().toISOString().slice(0,10)}`;
+    elStatus.value = 'review';
+    elNotes.value = '';
+    badge.textContent = '';
+
+    // Live platform preview - ONLY if not already bound
+    if (!elLink.dataset.hasPreview) {
+      elLink.addEventListener('input', () => {
+        const dp = (window.app.detectPlatform ? window.app.detectPlatform(elLink.value) : detectPlatformLocal(elLink.value));
+        badge.textContent = dp ? `Platform: ${dp.label || dp.key}` : '';
+      });
+      elLink.dataset.hasPreview = 'true';
+    }
+
+    // Remove previous ESC handler if exists
+    if (currentEscHandler) {
+      document.removeEventListener('keydown', currentEscHandler);
+      currentEscHandler = null;
+    }
+    
+    // Close handler that will be used ONLY for Cancel and X button
+    const closeHandler = (source) => {
+      console.log('Modal closing, source:', source || 'unknown');
+      modal.hidden = true;
+      modal.setAttribute('aria-hidden', 'true');
+      
+      // Remove ESC handler when modal closes
+      if (currentEscHandler) {
+        document.removeEventListener('keydown', currentEscHandler);
+        currentEscHandler = null;
+      }
+      
+      // Remove backdrop click handler if exists
+      if (currentBackdropHandler) {
+        modal.removeEventListener('click', currentBackdropHandler);
+        currentBackdropHandler = null;
+      }
+    };
+    
+    // DISABLE ESC key (user MUST click Cancel or Save)
+    // If you want ESC to close, uncomment the code below:
+    /*
+    currentEscHandler = (e) => {
+      if (e.key === 'Escape' && !modal.hidden) {
+        e.preventDefault();
+        console.log('ESC pressed');
+        closeHandler('ESC key');
+      }
+    };
+    document.addEventListener('keydown', currentEscHandler);
+    */
+    
+    // Buttons - use onclick instead of addEventListener
+    const closeBtn = document.getElementById('closeTransferModal');
+    const cancelBtn = document.getElementById('transferCancel');
+    
+    // ONLY these two buttons can close the modal
+    closeBtn.onclick = (e) => {
+      e.stopPropagation();
+      closeHandler('Close button');
+    };
+    cancelBtn.onclick = (e) => {
+      e.stopPropagation();
+      closeHandler('Cancel button');
+    };
+    
+    // Prevent closing when clicking on the modal box (inner)
+    const modalBox = modal.querySelector('.transfer-dialog-box');
+    if (modalBox) {
+      modalBox.onclick = (e) => {
+        e.stopPropagation();
+      };
+    }
+    
+    // DISABLE click outside to close (user MUST click Cancel or Save)
+    // If you want click outside to close, uncomment the code below:
+    /*
+    setTimeout(() => {
+      currentBackdropHandler = (e) => {
+        if (e.target === modal) {
+          console.log('Click on backdrop');
+          closeHandler('Click outside');
+        }
+      };
+      modal.addEventListener('click', currentBackdropHandler);
+    }, 100);
+    */
+    
+    // Form submit
+    f.onsubmit = (ev) => {
+      ev.preventDefault();
+      doTransferSave();
+    };
+
+    // Show modal
+    modal.hidden = false;
+    modal.setAttribute('aria-hidden', 'false');
+    setTimeout(() => elLink.focus(), 0);
+  }
+
+  // 5) Save (validation + write to state)
+  function doTransferSave(){
+    const modal = document.getElementById('transferModal');
+    const elLink = document.getElementById('tf_link');
+    const elTitle = document.getElementById('tf_title');
+    const elCat = document.getElementById('tf_category');
+    const elStatus = document.getElementById('tf_status');
+    const elNotes = document.getElementById('tf_notes');
+
+    const link = (elLink.value || '').trim();
+    // Regex for all supported platforms
+    const isAiLink = /^(https?:\/\/)?(chat\.openai\.com|chatgpt\.com|claude\.ai|gemini\.google\.com|notebooklm\.google\.com|perplexity\.ai|copilot\.microsoft\.com|bing\.com\/chat|poe\.com)\/?/i.test(link);
+
+    if (!isAiLink) {
+      alert('Enter a valid AI link (ChatGPT, Claude, Gemini, Copilot, Perplexity, Bard, NotebookLM, or Poe).');
+      elLink.focus();
+      return;
+    }
+
+    const title = (elTitle.value || '').trim() || `AI Conversation – ${new Date().toISOString().slice(0,10)}`;
+    const category = (elCat.value || 'AI').trim();
+    const status = (elStatus.value || 'review').trim();
+    const notes = (elNotes.value || '').trim();
+    const item = {
+      id: (window.app.mkId ? window.app.mkId() : ('id_' + Date.now() + '_' + Math.random().toString(16).slice(2))),
+      title, category, status, link, notes,
+      updatedAt: Date.now()
+    };
+
+    const refs = getAppRefs();
+    // ensure category exists
+    refs.ensureCategory(category, category);
+
+    // duplicates: title+cat (can be changed as desired)
+    const st = refs.state;
+    if (st?.items && Array.isArray(st.items)) {
+      const dup = st.items.find(x => (x.title === title && (x.category === category)));
+      if (dup && !confirm('An item with the same title and category exists. Add anyway?')) {
+        return;
+      }
+    }
+
+    // write
+    refs.pushItem(item);
+
+    // Close modal
+    modal.hidden = true;
+    modal.setAttribute('aria-hidden', 'true');
+    
+    if (currentEscHandler) {
+      document.removeEventListener('keydown', currentEscHandler);
+      currentEscHandler = null;
+    }
+    
+    console.log('Modal closed after save');
+    
+    try {
+      // if you have your own toast, replace alert
+      alert('Conversation added ✨');
+    } catch(e){}
+  }
+})();
+</script>
+<script>
+(function() {
+  // --- Utility helpers ---
+  function debounce(fn, ms){let t;return function(...a){clearTimeout(t);t=setTimeout(()=>fn.apply(this,a),ms);}}
+
+  // Basic Markdown parser (safe-ish, simple)
+  function parseMarkdown(text) {
+    if (!text) return '';
+    let html = (''+text).trim();
+
+    // Escape basic HTML to avoid injection, then allow our replacements
+    html = html.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+
+    // Headings (# ...)
+    html = html.replace(/^###\s+(.*)$/gm, '<h3>$1</h3>');
+    html = html.replace(/^##\s+(.*)$/gm, '<h2>$1</h2>');
+    html = html.replace(/^#\s+(.*)$/gm, '<h1>$1</h1>');
+
+    // Bold / italic
+    html = html.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+    html = html.replace(/__(.*?)__/g, '<strong>$1</strong>');
+    html = html.replace(/(^|[^\*])\*(?!\s)(.*?)(?<!\s)\*/g, '$1<em>$2</em>');
+    html = html.replace(/(^|[^_])_(?!\s)(.*?)(?<!\s)_/g, '$1<em>$2</em>');
+
+    // Inline code `code`
+    html = html.replace(/`([^`]+)`/g, '<code>$1</code>');
+    
+    // Highlight ==mark==
+    html = html.replace(/==([^=]+)==/g, '<mark>$1</mark>');
+
+    // Links [text](url)
+    html = html.replace(/\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g, '<a href="$2" target="_blank" rel="noreferrer noopener">$1</a>');
+
+    // Unordered lists
+    // First normalize newlines
+    html = html.replace(/\r\n/g, '\n');
+    // Wrap - item lines into <li>
+    html = html.replace(/^\s*-\s+(.*)$/gm, '<li>$1</li>');
+    if (/<li>/.test(html)) {
+      // Merge consecutive <li> into a single <ul>
+      html = html.replace(/(?:\s*<li>[\s\S]*?<\/li>\s*)+/g, function(block){
+        const items = block.match(/<li>[\s\S]*?<\/li>/g) || [];
+        return '<ul>' + items.join('') + '</ul>';
+      });
+    }
+
+    // Paragraphs: split by double newline; keep existing block tags intact
+    html = html.split(/\n{2,}/).map(chunk => {
+      if (!chunk.trim()) return ''; // Ignore empty chunks
+      // Check for block tags at start of chunk (h1, h2, h3, ul, li, p, blockquote, pre, code)
+      if (/^\s*<(h\d|ul|li|p|blockquote|pre|code|div|table|tr|th|td)/i.test(chunk)) return chunk;
+      return '<p>' + chunk.replace(/\n/g,'<br>') + '</p>';
+    }).join('');
+
+    return html;
+  }
+
+  // Expose for debugging
+  window.parseMarkdown = window.parseMarkdown || parseMarkdown;
+
+  // Enhance .notes blocks by converting plain text to HTML once
+  function enhanceNotes() {
+    const nodes = document.querySelectorAll('.notes:not([data-md="1"])');
+    nodes.forEach(el => {
+      // If element already has HTML children (not just text), skip to avoid double parsing
+      const raw = el.getAttribute('data-raw-notes') || el.textContent || '';
+      const html = parseMarkdown(raw);
+      el.innerHTML = html;
+      el.setAttribute('data-md', '1');
+    });
+  }
+
+  // We are removing the redundant renderList patch since the app uses render()
+
+  // Fallback: try enhancing after DOMContentLoaded and after clicks/render
+  document.addEventListener('DOMContentLoaded', () => {
+    setTimeout(enhanceNotes, 50);
+    // Observe DOM for changes (e.g., when render() updates contentArea)
+    const observer = new MutationObserver(debounce(enhanceNotes, 100));
+    const contentArea = document.getElementById('contentArea');
+    if (contentArea) {
+        observer.observe(contentArea, { childList: true, subtree: true });
+    }
+  });
+
+
+  // --- Fuse.js fuzzy search ---
+  let fuse = null;
+  // Expose fuse for debugging
+  window.fuse = fuse;
+  // Expose flag
+  window.__fuseReady = false; 
+
+  function initFuse() {
+    // Check for global state object
+    if (!window.appState || !Array.isArray(window.appState.items)) {
+        window.__fuseReady = false;
+        return;
+    }
+    
+    // Check if Fuse is defined (from CDN)
+    if (typeof Fuse !== 'function') {
+        console.warn("Fuse.js library not loaded.");
+        window.__fuseReady = false;
+        return;
+    }
+
+    try {
+      // Use the existing logic's keys and reasonable threshold
+      const options = {
+        keys: [
+            "title", 
+            "notes", 
+            "link"
+        ],
+        includeScore: true,
+        threshold: 0.35, // Default is 0.6. 0.35 gives good fuzzy matching.
+        ignoreLocation: true,
+        minMatchCharLength: 2
+      };
+
+      fuse = new Fuse(window.appState.items, options);
+      window.fuse = fuse;
+      window.__fuseReady = true;
+      console.log('Fuse.js initialized with keys: title, notes, link');
+    } catch (e) {
+      console.error("Fuse init failed:", e);
+      window.__fuseReady = false;
+    }
+  }
+
+  window.setFuseCollection = function() {
+    if (fuse && window.appState && Array.isArray(window.appState.items) && typeof fuse.setCollection === 'function') {
+      fuse.setCollection(window.appState.items);
+      console.log('Fuse collection updated.');
+    } else {
+      initFuse();
+    }
+  };
+
+  // Patch save() (renamed to saveState in app.js scope for exposure) to update Fuse after changes
+  const origSave = window.app.saveState;
+  if(origSave && !window.__saveStatePatched){
+    window.app.saveState = function(){
+        const r = origSave.apply(this, arguments);
+        window.setFuseCollection(); // Call the exposed update function
+        return r;
+    };
+    window.__saveStatePatched = true;
+  }
+  
+  // Patch window.addItem (if it exists)
+  const origAddItem = window.addItem;
+  if (origAddItem && !window.__addItemPatched) {
+      window.addItem = function(item) {
+          origAddItem.apply(this, arguments);
+          window.setFuseCollection();
+      };
+      window.__addItemPatched = true;
+  }
+
+  // Since the main app script uses render() on search input, we don't need a separate wireSearch
+  // We only need to ensure Fuse is ready on load.
+
+  document.addEventListener('DOMContentLoaded', () => {
+    // Initial load might not have all data yet, so we re-try
+    setTimeout(() => {
+        initFuse();
+        // Fallback check: re-init Fuse when items length changes (best effort watcher)
+        setInterval(() => {
+            try {
+                const len = window.appState && window.appState.items ? window.appState.items.length : 0;
+                if (window.__prevLen !== len) {
+                    window.__prevLen = len;
+                    window.setFuseCollection();
+                }
+            } catch {}
+        }, 800);
+    }, 100);
+  });
+})();
+</script>
+
+
+<script>
+// Disable browser autofill/autocomplete suggestions on the search box
+document.addEventListener('DOMContentLoaded', function() {
+  var s = document.getElementById('search');
+  if (s) {
+    s.setAttribute('autocomplete','off');
+    s.setAttribute('autocorrect','off');
+    s.setAttribute('autocapitalize','off');
+    s.setAttribute('spellcheck','false');
+    s.setAttribute('inputmode','search');
+    s.setAttribute('enterkeyhint','search');
+    // Randomize name each load to defeat saved autofill entries
+    s.setAttribute('name', 'search_' + Math.random().toString(36).slice(2));
+    // If inside a form, disable its autocomplete too
+    var f = s.closest('form');
+    if (f) f.setAttribute('autocomplete','off');
+  }
+});
+</script>
+
+</body>
+</html>

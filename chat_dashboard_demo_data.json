@@ -1,0 +1,316 @@
+{
+  "categories": [
+    { "key": "DEV", "label": "Software Development", "emoji": "💻" },
+    { "key": "WRITE", "label": "Creative Writing", "emoji": "✍️" },
+    { "key": "LANG", "label": "Language Learning", "emoji": "🌍" },
+    { "key": "CAREER", "label": "Career Development", "emoji": "💼" },
+    { "key": "HOBBY", "label": "Side Projects & Hobbies", "emoji": "🚀" }
+  ],
+  "items": [
+    {
+      "id": "chat_001",
+      "title": "Python pandas DataFrame optimization tips",
+      "category": "DEV",
+      "status": "done",
+      "link": "https://chatgpt.com/c/abc123def456",
+      "notes": "Discussed various techniques for optimizing pandas operations:\n\n- Use `.query()` instead of boolean indexing for better performance\n- Vectorized operations are 50-100x faster than iterrows()\n- `category` dtype can save 90% memory for string columns\n- Use `eval()` for complex mathematical expressions\n\n**Key takeaway:** Replaced a 45-second loop with 0.3s vectorized operation! 🚀",
+      "tags": ["python", "pandas", "optimization", "data-science"],
+      "updatedAt": 1730500000000
+    },
+    {
+      "id": "chat_002",
+      "title": "React useEffect cleanup function explained",
+      "category": "DEV",
+      "status": "important",
+      "link": "https://claude.ai/chat/xyz789abc",
+      "notes": "Finally understood cleanup functions in useEffect! Claude explained with practical examples:\n\n```javascript\nuseEffect(() => {\n  const timer = setInterval(() => {...}, 1000);\n  \n  return () => clearInterval(timer); // Cleanup!\n}, []);\n```\n\n**When cleanup runs:**\n- Before component unmounts\n- Before effect runs again (on dependency change)\n\nPrevents memory leaks in subscriptions, timers, and event listeners.",
+      "tags": ["react", "hooks", "javascript", "frontend"],
+      "updatedAt": 1730450000000
+    },
+    {
+      "id": "chat_003",
+      "title": "SQL JOIN types visual explanation",
+      "category": "DEV",
+      "status": "review",
+      "link": "https://gemini.google.com/app/conversation123",
+      "notes": "Gemini provided excellent visual explanations:\n\n**INNER JOIN** - Only matching records from both tables\n**LEFT JOIN** - All from left + matching from right\n**RIGHT JOIN** - All from right + matching from left\n**FULL OUTER JOIN** - Everything from both\n\nUsed Venn diagrams to illustrate. Saved images for reference.",
+      "tags": ["sql", "database", "joins", "reference"],
+      "updatedAt": 1730300000000
+    },
+    {
+      "id": "chat_004",
+      "title": "REST API best practices and design patterns",
+      "category": "DEV",
+      "status": "active",
+      "link": "https://perplexity.ai/search/rest-api-best",
+      "notes": "Comprehensive guide on RESTful API design:\n\n**URL Structure:**\n- Use nouns, not verbs: `/users` not `/getUsers`\n- Plural for collections: `/articles`\n- Nested for relationships: `/users/123/posts`\n\n**HTTP Methods:**\n- GET (retrieve), POST (create), PUT (update), DELETE (remove)\n\n**Status Codes:**\n- 200 OK, 201 Created, 400 Bad Request, 404 Not Found, 500 Server Error\n\n**Versioning:** Use `/v1/users` in URL\n\nNeed to review authentication section (JWT vs OAuth).",
+      "tags": ["api", "rest", "backend", "best-practices"],
+      "updatedAt": 1730900000000
+    },
+    {
+      "id": "chat_005",
+      "title": "Debugging Node.js memory leak in production",
+      "category": "DEV",
+      "status": "progress",
+      "link": "https://chatgpt.com/c/debug456memory",
+      "notes": "Working through a nasty memory leak:\n\n**Problem:** App memory growing from 200MB to 2GB over 6 hours\n\n**Investigation tools:**\n- `node --inspect` + Chrome DevTools\n- `clinic.js` for profiling\n- Heap snapshots comparison\n\n**Found:** Event listeners not being removed on user disconnect. Fixed with proper cleanup in Socket.io handlers.\n\nTesting in staging now. 🔍",
+      "tags": ["nodejs", "debugging", "memory-leak", "production"],
+      "updatedAt": 1730850000000
+    },
+    {
+      "id": "chat_006",
+      "title": "Fantasy novel - Dragon rider character backstory",
+      "category": "WRITE",
+      "status": "done",
+      "link": "https://claude.ai/chat/fantasy123story",
+      "notes": "Developed backstory for Kaelin, the reluctant dragon rider:\n\n**Background:**\n- Orphaned at 12 when dragons destroyed her village\n- Grew up hating dragons, trained as dragon slayer\n- At 19, accidentally bonded with dragon egg she was meant to destroy\n- Now struggles with identity: raised to hate, forced to partner\n\n**Character arc:** From hatred → understanding → acceptance → protector\n\n**Dragon's name:** Ashwing (silver scales, smoke breath)\n\nClaud suggested her inner conflict could drive the first 3 chapters. Love this direction! ✨",
+      "tags": ["fantasy", "character-development", "worldbuilding", "novel"],
+      "updatedAt": 1730600000000
+    },
+    {
+      "id": "chat_007",
+      "title": "Sci-fi plot holes in time travel chapter",
+      "category": "WRITE",
+      "status": "revise",
+      "link": "https://chatgpt.com/c/scifi789plot",
+      "notes": "Identified inconsistencies in Chapter 7:\n\n**Plot holes:**\n1. Character knows about event that hasn't happened yet in their timeline\n2. Bootstrap paradox not addressed (who invented the time machine?)\n3. Parallel universes vs single timeline - need to choose one!\n\n**Solutions discussed:**\n- Establish clear rules early (Chapter 2)\n- Add scene where protagonist discovers the paradox\n- Foreshadow the \"fixed point\" concept\n\n**Need to revise:** Chapters 2, 7, and 9",
+      "tags": ["sci-fi", "plot", "time-travel", "revision"],
+      "updatedAt": 1730400000000
+    },
+    {
+      "id": "chat_008",
+      "title": "Dialogue writing - Making conversations feel natural",
+      "category": "WRITE",
+      "status": "important",
+      "link": "https://claude.ai/chat/dialogue456tips",
+      "notes": "Claude gave excellent dialogue tips:\n\n**Make it realistic:**\n- People interrupt, use contractions, trail off\n- Add filler words occasionally (\"um\", \"you know\")\n- Not everyone speaks in complete sentences\n\n**Show character:**\n- Each character should have distinct speech patterns\n- Education level affects vocabulary\n- Emotional state changes how people talk\n\n**Read aloud test:** If it sounds weird when spoken, rewrite it!\n\n**Example before/after:**\n❌ \"I am going to the store now. Would you like anything?\"\n✅ \"Heading to the store. Need anything?\"\n\nThis is gold! 🎯",
+      "tags": ["dialogue", "writing-tips", "craft", "reference"],
+      "updatedAt": 1730700000000
+    },
+    {
+      "id": "chat_009",
+      "title": "Worldbuilding - Magic system with consistent rules",
+      "category": "WRITE",
+      "status": "active",
+      "link": "https://gemini.google.com/app/worldbuild123",
+      "notes": "Designing a hard magic system:\n\n**Core Rules:**\n1. Magic requires personal sacrifice (health, memories, years of life)\n2. Bigger spell = bigger cost\n3. No one can give their life for infinite power (death breaks the connection)\n\n**Limitations create tension:**\n- Healing spell might cost a memory\n- Protagonist must choose: save friend or remember their childhood?\n\n**Types of magic users:**\n- **Burners:** Sacrifice years of life (short-lived but powerful)\n- **Forgetters:** Trade memories (lose identity over time)\n- **Breakers:** Damage their body (chronic pain, disabilities)\n\nThis solves my \"why don't they just magic everything?\" problem! 🔮",
+      "tags": ["worldbuilding", "magic-system", "fantasy", "rules"],
+      "updatedAt": 1730800000000
+    },
+    {
+      "id": "chat_010",
+      "title": "Spanish subjunctive vs indicative mood",
+      "category": "LANG",
+      "status": "progress",
+      "link": "https://chatgpt.com/c/spanish123grammar",
+      "notes": "Finally getting the subjunctive!\n\n**Indicative = Facts/Reality:**\n\"Sé que **está** aquí\" (I know he IS here)\n\n**Subjunctive = Uncertainty/Wishes/Emotions:**\n\"Dudo que **esté** aquí\" (I doubt he IS here)\n\n**Triggers for subjunctive:**\n- Doubt: dudar, no creer\n- Wishes: querer, esperar\n- Emotions: alegrarse, temer\n- Impersonal: es importante que, es posible que\n\n**Practice sentences:**\n✅ Espero que **tengas** un buen día\n✅ No creo que **venga** mañana\n✅ Me alegra que **estés** aquí\n\nNeed more practice with this! 📚",
+      "tags": ["spanish", "grammar", "subjunctive", "learning"],
+      "updatedAt": 1730650000000
+    },
+    {
+      "id": "chat_011",
+      "title": "Japanese particle は vs が explained",
+      "category": "LANG",
+      "status": "done",
+      "link": "https://claude.ai/chat/japanese789particles",
+      "notes": "Claude's explanation was crystal clear:\n\n**は (wa) - Topic marker:**\n\"As for X...\" (introduces what you're talking about)\n私**は**学生です (As for me, [I] am a student)\n\n**が (ga) - Subject marker:**\nIdentifies WHO/WHAT does the action\n誰**が**来ますか？ (Who is coming?)\n田中さん**が**来ます (Tanaka is coming)\n\n**Key difference:**\n- は = old/known information, sets context\n- が = new/important information, emphasis\n\n**Example:**\n犬**は**好きですが、猫**が**好きです\n(As for dogs, [I] like [them], but [I] REALLY like cats)\n\nMind = blown! 🇯🇵",
+      "tags": ["japanese", "particles", "grammar", "n5"],
+      "updatedAt": 1730550000000
+    },
+    {
+      "id": "chat_012",
+      "title": "French pronunciation - Nasal vowels practice",
+      "category": "LANG",
+      "status": "active",
+      "link": "https://gemini.google.com/app/french456pronunciation",
+      "notes": "Working on the 4 French nasal vowels:\n\n**1. /ɑ̃/ - AN/EN:** banque, restaurant, temps\n**2. /ɛ̃/ - IN:** vin, pain, impossible  \n**3. /ɔ̃/ - ON:** bon, nom, rond\n**4. /œ̃/ - UN:** un, brun, parfum (rare, dying out)\n\n**Tips from Gemini:**\n- Air flows through nose AND mouth\n- Don't pronounce the 'n' separately\n- Think: \"hum with mouth in position\"\n\n**Minimal pairs for practice:**\n- beau (beautiful) vs. bon (good)\n- vin (wine) vs. vont (they go)\n\nRecording myself to compare. Still sounds weird! 🇫🇷",
+      "tags": ["french", "pronunciation", "phonetics", "beginner"],
+      "updatedAt": 1730820000000
+    },
+    {
+      "id": "chat_013",
+      "title": "German compound words explained",
+      "category": "LANG",
+      "status": "review",
+      "link": "https://perplexity.ai/search/german-compound",
+      "notes": "German compound words are insane (in a good way):\n\n**How they work:**\nCombine multiple words into one super-word\n\n**Examples:**\n- Handschuh = Hand + Schuh = Glove (literally \"hand shoe\")\n- Fernseher = Fern + Seher = Television (\"far-seer\")\n- Krankenhaus = Kranken + Haus = Hospital (\"sick house\")\n\n**Longest official word:**\nRindfleischetikettierungsüberwachungsaufgabenübertragungsgesetz\n(Beef labeling regulation delegation law) - 63 letters! 😱\n\n**Strategy:** Learn the component parts, then compounds become logical.\n\nMind blown by the logic! 🇩🇪",
+      "tags": ["german", "vocabulary", "compound-words", "learning"],
+      "updatedAt": 1730200000000
+    },
+    {
+      "id": "chat_014",
+      "title": "Italian idioms and expressions guide",
+      "category": "LANG",
+      "status": "done",
+      "link": "https://chatgpt.com/c/italian123idioms",
+      "notes": "Fun Italian idioms that don't translate:\n\n**In bocca al lupo!** 🐺\nLiterally: \"In the mouth of the wolf!\"\nMeaning: \"Good luck!\"\nResponse: \"Crepi il lupo!\" (May the wolf die!)\n\n**Avere le mani in pasta** 🍝\nLiterally: \"To have hands in dough\"\nMeaning: To be involved in everything (often shady)\n\n**Non avere peli sulla lingua**\nLiterally: \"To not have hair on your tongue\"\nMeaning: To be blunt/direct\n\n**Acqua in bocca!** 💧\nLiterally: \"Water in mouth!\"\nMeaning: \"Keep it secret!\"\n\n**Meglio un uovo oggi che una gallina domani**\nLiterally: \"Better an egg today than a chicken tomorrow\"\nMeaning: \"A bird in the hand is worth two in the bush\"\n\nThese are gold for sounding more natural! 🇮🇹",
+      "tags": ["italian", "idioms", "expressions", "culture"],
+      "updatedAt": 1730350000000
+    },
+    {
+      "id": "chat_015",
+      "title": "Software Engineer resume review and optimization",
+      "category": "CAREER",
+      "status": "done",
+      "link": "https://claude.ai/chat/resume123review",
+      "notes": "Claude reviewed my resume - major improvements:\n\n**Before:** \"Responsible for developing features\"\n**After:** \"Built 15+ user-facing features serving 100K+ daily users, reducing page load time by 40%\"\n\n**Key changes:**\n- ✅ Added metrics and impact (numbers!)\n- ✅ Started with action verbs (Built, Designed, Optimized)\n- ✅ Removed generic phrases (\"team player\", \"hard worker\")\n- ✅ Focused on achievements, not responsibilities\n\n**Format tips:**\n- One page for <10 years experience\n- Reverse chronological order\n- ATS-friendly (no tables, simple formatting)\n\n**Result:** Got 3 interview requests in first week! 🎯",
+      "tags": ["resume", "job-search", "career", "optimization"],
+      "updatedAt": 1730750000000
+    },
+    {
+      "id": "chat_016",
+      "title": "Mock technical interview - Product Manager role",
+      "category": "CAREER",
+      "status": "important",
+      "link": "https://chatgpt.com/c/interview456mock",
+      "notes": "Practiced common PM interview questions:\n\n**1. \"How would you prioritize features?\"**\nUsed RICE framework:\n- **R**each (how many users affected)\n- **I**mpact (how much it helps)\n- **C**onfidence (how sure are we)\n- **E**ffort (how much work)\n\n**2. \"Design a product for X\"**\nStructure: Clarify → Users → Pain Points → Solutions → Prioritize\n\n**3. \"Why this company?\"**\nResearch: product, mission, recent news, team\nShow genuine interest, not generic praise\n\n**4. \"Tell me about a failed project\"**\nUse STAR method: Situation → Task → Action → Result\nFocus on learning, not blame\n\n**Feedback:** Good structure, need more specific examples. Practice storytelling! 🎤",
+      "tags": ["interview", "product-manager", "preparation", "mock"],
+      "updatedAt": 1730880000000
+    },
+    {
+      "id": "chat_017",
+      "title": "Cover letter for Stripe application",
+      "category": "CAREER",
+      "status": "done",
+      "link": "https://claude.ai/chat/coverletter789",
+      "notes": "Wrote targeted cover letter for Stripe:\n\n**Structure:**\n1. **Hook:** Personal connection (used Stripe API in my side project)\n2. **Why them:** Specific admiration (developer experience, documentation)\n3. **Why me:** Relevant achievements (scaled payment system, reduced fraud)\n4. **Match:** How my skills solve their challenges\n5. **CTA:** Express enthusiasm, request interview\n\n**Key points:**\n- Mentioned specific Stripe products (Checkout, Radar)\n- Referenced their blog post on API design\n- Showed understanding of their mission\n- Kept it under 400 words\n\n**Result:** Phone screen scheduled! 🎉",
+      "tags": ["cover-letter", "stripe", "job-application", "success"],
+      "updatedAt": 1730250000000
+    },
+    {
+      "id": "chat_018",
+      "title": "Salary negotiation strategies and tactics",
+      "category": "CAREER",
+      "status": "active",
+      "link": "https://perplexity.ai/search/salary-negotiation",
+      "notes": "Researching negotiation tactics:\n\n**Before the offer:**\n- Avoid giving number first (\"What's your budget?\")\n- Research market rates (Levels.fyi, Glassdoor)\n- Know your worth + 10-20%\n\n**When you get offer:**\n- Express enthusiasm FIRST\n- Then: \"I'm excited! Can we discuss the compensation?\"\n- Never accept immediately\n\n**Negotiation tips:**\n- Ask for 10-20% more than offered\n- Negotiate total comp (salary + equity + bonus)\n- Get everything in writing\n- Be prepared to walk away\n\n**If they won't budge on salary:**\n- Ask for signing bonus\n- Request more equity\n- Negotiate benefits (remote work, PTO)\n\n**Remember:** They expect you to negotiate! 💰",
+      "tags": ["negotiation", "salary", "career-growth", "strategy"],
+      "updatedAt": 1730920000000
+    },
+    {
+      "id": "chat_019",
+      "title": "Career pivot from Marketing to UX Design",
+      "category": "CAREER",
+      "status": "progress",
+      "link": "https://claude.ai/chat/pivot123career",
+      "notes": "Planning my career transition:\n\n**Transferable skills from Marketing:**\n- User research & personas ✅\n- Data analysis & A/B testing ✅\n- Storytelling & presentation ✅\n- Stakeholder management ✅\n\n**Need to learn:**\n- Design tools (Figma, Sketch)\n- UX principles & patterns\n- Prototyping & wireframing\n- Accessibility standards\n\n**Action plan:**\n1. **Month 1-2:** Take Google UX Design Certificate\n2. **Month 3-4:** Build 3 case studies (redesign projects)\n3. **Month 5-6:** Freelance projects on Upwork\n4. **Month 7:** Start applying\n\n**Timeline:** 6-8 months to transition\n\nClaud suggested highlighting marketing insights in UX portfolio. Great angle! 🎨",
+      "tags": ["career-change", "ux-design", "transition", "planning"],
+      "updatedAt": 1730780000000
+    },
+    {
+      "id": "chat_020",
+      "title": "Raspberry Pi home automation setup guide",
+      "category": "HOBBY",
+      "status": "active",
+      "link": "https://chatgpt.com/c/raspi456automation",
+      "notes": "Building smart home system with Raspberry Pi 4:\n\n**Components:**\n- Raspberry Pi 4 (4GB)\n- DHT22 temperature/humidity sensors\n- Relay modules for lights\n- Motion sensors (PIR)\n\n**Software stack:**\n- Home Assistant OS\n- MQTT broker for communication\n- Node-RED for automation flows\n\n**Automations planned:**\n1. Turn lights on when motion detected (after sunset)\n2. Send alert if temperature > 30°C\n3. Morning routine: lights + coffee maker\n\n**Current status:** Hardware assembled, configuring Home Assistant\n\n**Next:** Set up Zigbee network for smart bulbs 💡",
+      "tags": ["raspberry-pi", "home-automation", "iot", "diy"],
+      "updatedAt": 1730860000000
+    },
+    {
+      "id": "chat_021",
+      "title": "Starting a podcast - Equipment and workflow",
+      "category": "HOBBY",
+      "status": "review",
+      "link": "https://gemini.google.com/app/podcast789setup",
+      "notes": "Researched podcast setup:\n\n**Beginner equipment ($300 budget):**\n- Audio-Technica ATR2100x mic ($99)\n- Boom arm + shock mount ($30)\n- Focusrite Scarlett Solo interface ($120)\n- Closed-back headphones ($50)\n\n**Software (free):**\n- Recording: Audacity / GarageBand\n- Editing: Descript (free tier)\n- Hosting: Anchor.fm\n\n**Workflow:**\n1. Plan episode (outline + research)\n2. Record in quiet room (closet with blankets)\n3. Edit: remove filler words, add intro/outro\n4. Noise reduction + normalize audio\n5. Export MP3 (-16 LUFS standard)\n6. Upload + publish\n\n**Frequency:** Bi-weekly to start\n\nNeed to decide on podcast topic! 🎙️",
+      "tags": ["podcast", "audio", "equipment", "workflow"],
+      "updatedAt": 1730450000000
+    },
+    {
+      "id": "chat_022",
+      "title": "Woodworking beginner project ideas",
+      "category": "HOBBY",
+      "status": "done",
+      "link": "https://claude.ai/chat/woodwork123beginner",
+      "notes": "Claude suggested perfect beginner projects:\n\n**Project 1: Wooden serving board** ✅\n- Simple, forgiving, useful\n- Skills: measuring, cutting, sanding, oiling\n- Wood: Walnut or maple\n- Time: 2-3 hours\n- **Result:** Made one, turned out great!\n\n**Project 2: Floating shelves** (Next)\n- Learn: dadoes, pocket holes, leveling\n- Wood: Pine for practice\n- Time: Half day\n\n**Project 3: Coffee table** (Future)\n- Combines all skills learned\n- Joinery practice\n\n**Tools needed:**\n- Circular saw (have ✅)\n- Random orbital sander (need)\n- Pocket hole jig (need)\n- Wood glue + clamps ✅\n\n**Next purchase:** Sander + jig ($150)\n\nExcited to start Project 2! 🪵",
+      "tags": ["woodworking", "beginner", "diy", "projects"],
+      "updatedAt": 1730300000000
+    },
+    {
+      "id": "chat_023",
+      "title": "Photography lighting setup explained",
+      "category": "HOBBY",
+      "status": "important",
+      "link": "https://perplexity.ai/search/photography-lighting",
+      "notes": "Learning lighting fundamentals:\n\n**Three-point lighting:**\n1. **Key light** (main) - 45° angle, brightest\n2. **Fill light** - Opposite side, softer, reduces shadows\n3. **Back light** - Behind subject, creates separation\n\n**Light quality:**\n- **Hard light:** Small source → sharp shadows (sun, bare bulb)\n- **Soft light:** Large source → gradual shadows (cloudy day, softbox)\n\n**Direction matters:**\n- Front: flat, boring\n- Side: dramatic, texture\n- Top: harsh, unflattering\n- Back: silhouette or rim light\n\n**Budget setup:**\n- 2x LED panels ($80 each)\n- Diffusers (white sheet works!)\n- Reflector ($15)\n\n**Golden hour rule:** 1 hour after sunrise / before sunset = best natural light\n\nThis explains why my photos looked weird! 📸",
+      "tags": ["photography", "lighting", "tutorial", "reference"],
+      "updatedAt": 1730680000000
+    },
+    {
+      "id": "chat_024",
+      "title": "YouTube channel strategy brainstorm",
+      "category": "HOBBY",
+      "status": "progress",
+      "link": "https://chatgpt.com/c/youtube456strategy",
+      "notes": "Planning my tech review channel:\n\n**Niche:** Budget tech for students ($0-$100 products)\n\n**Content pillars:**\n1. Product reviews (weekly)\n2. \"Worth it?\" comparisons\n3. Budget setup tours\n\n**Unique angle:** Actually test cheap alternatives vs expensive brands\n\n**Target audience:**\n- Students, young professionals\n- Age 18-25\n- Budget-conscious tech enthusiasts\n\n**Growth strategy:**\n- SEO-optimized titles (\"Best laptop under $300\")\n- Shorts for reach\n- Consistent schedule (every Saturday)\n\n**First 10 videos planned:**\n✅ Budget mechanical keyboards comparison\n✅ $50 vs $500 headphones blind test\n- Budget webcam shootout\n- Student desk setup under $200\n\n**Goal:** 1000 subscribers in 6 months\n\nFilming first video this weekend! 🎥",
+      "tags": ["youtube", "content-creation", "strategy", "tech"],
+      "updatedAt": 1730950000000
+    },
+    {
+      "id": "chat_025",
+      "title": "Learning piano as adult - Practice routine",
+      "category": "HOBBY",
+      "status": "active",
+      "link": "https://claude.ai/chat/piano789practice",
+      "notes": "Claude designed practice routine for my level:\n\n**Daily 30-min practice:**\n\n**Warm-up (5 min):**\n- Finger exercises (Hanon)\n- Scales: C major, A minor\n\n**Technique (10 min):**\n- Chord progressions\n- Hand independence exercises\n\n**Pieces (10 min):**\n- Current piece: Für Elise (first section)\n- Break it into small chunks\n- Slow practice, gradually increase tempo\n\n**Sight-reading (5 min):**\n- Easy pieces, don't stop for mistakes\n- Builds reading fluency\n\n**Key advice:**\n- Consistency > Duration (30 min daily > 2 hours weekly)\n- Use metronome!\n- Record yourself weekly to track progress\n- Patience: adults learn differently than kids\n\n**Progress tracker:**\n- Week 1-2: Can't play first 4 bars\n- Week 3-4: First section slowly ✅\n- Week 5-6: Building speed (goal)\n\nStaying consistent! 🎹",
+      "tags": ["piano", "music", "practice", "adult-learning"],
+      "updatedAt": 1730800000000
+    },
+    {
+      "id": "chat_026",
+      "title": "Docker container orchestration with Kubernetes",
+      "category": "DEV",
+      "status": "followup",
+      "link": "https://claude.ai/chat/k8s123basics",
+      "notes": "Started learning Kubernetes basics:\n\n**Key concepts:**\n- **Pods:** Smallest unit (1+ containers)\n- **Deployments:** Manage pod replicas\n- **Services:** Expose pods to network\n- **Ingress:** External access routing\n\n**Architecture:**\n```\nControl Plane (Master)\n├─ API Server\n├─ Scheduler\n└─ Controller Manager\n\nWorker Nodes\n├─ Kubelet (manages pods)\n├─ Container Runtime (Docker)\n└─ Kube-proxy (networking)\n```\n\n**Basic commands:**\n`kubectl get pods` - list pods\n`kubectl apply -f deployment.yaml` - deploy\n`kubectl logs <pod-name>` - view logs\n\n**Next:** Set up local cluster with minikube\n\nThis is complex but powerful! Need more practice. 🐳",
+      "tags": ["kubernetes", "docker", "devops", "containers"],
+      "updatedAt": 1730720000000
+    },
+    {
+      "id": "chat_027",
+      "title": "Historical fiction dialogue authenticity tips",
+      "category": "WRITE",
+      "status": "review",
+      "link": "https://gemini.google.com/app/historical456dialogue",
+      "notes": "Writing dialogue for 1890s London setting:\n\n**Do's:**\n- Research period slang and expressions\n- Read books from that era\n- Use formal address (\"Sir\", \"Madam\", \"My Lord\")\n- Consider class differences in speech\n\n**Don'ts:**\n- Don't use modern slang (\"cool\", \"okay\")\n- Don't overdo the \"ye olde\" speak\n- Avoid anachronistic references\n\n**Resources:**\n- \"The Slang Dictionary\" (1874) for period vocabulary\n- Victorian novels for natural speech patterns\n- Downton Abbey (1920s but useful)\n\n**Example corrections:**\n❌ \"That's awesome!\" → ✅ \"How splendid!\"\n❌ \"What's up?\" → ✅ \"Good day to you\"\n❌ \"I'm stressed\" → ✅ \"I'm quite vexed\"\n\n**Balance:** Make it period-appropriate but still readable\n\nNeed to revise Chapter 3 dialogue! 📜",
+      "tags": ["historical-fiction", "dialogue", "research", "victorian"],
+      "updatedAt": 1730350000000
+    },
+    {
+      "id": "chat_028",
+      "title": "Git branching strategies for team projects",
+      "category": "DEV",
+      "status": "important",
+      "link": "https://perplexity.ai/search/git-flow-branching",
+      "notes": "Compared different Git workflows:\n\n**Git Flow (traditional):**\n- `main` → production\n- `develop` → integration\n- `feature/*` → new features\n- `release/*` → release prep\n- `hotfix/*` → urgent fixes\n\n**GitHub Flow (simpler):**\n- `main` → always deployable\n- `feature-branch` → work\n- PR → merge to main\n- Deploy from main\n\n**Trunk-based (CI/CD):**\n- Everyone commits to `main`\n- Short-lived feature branches\n- Feature flags for incomplete work\n\n**Our team decision:** GitHub Flow\n- Simpler than Git Flow\n- Fits our CI/CD pipeline\n- Easier for juniors to understand\n\n**Rules:**\n- Branch naming: `feature/add-login-page`\n- Require PR reviews (2 approvals)\n- Squash and merge\n- Delete branch after merge\n\nDocumenting this for team! 📝",
+      "tags": ["git", "workflow", "team", "best-practices"],
+      "updatedAt": 1730600000000
+    },
+    {
+      "id": "chat_029",
+      "title": "Spanish restaurant conversation practice",
+      "category": "LANG",
+      "status": "done",
+      "link": "https://chatgpt.com/c/spanish123restaurant",
+      "notes": "Practiced common restaurant phrases:\n\n**Entering:**\n- \"Una mesa para dos, por favor\" (Table for two, please)\n- \"¿Tiene reserva?\" (Do you have a reservation?)\n\n**Ordering:**\n- \"¿Qué recomienda?\" (What do you recommend?)\n- \"Para mí...\" (For me...)\n- \"De postre, ...\" (For dessert...)\n\n**Dietary needs:**\n- \"Soy vegetariano/a\" (I'm vegetarian)\n- \"¿Tiene opciones sin gluten?\" (Do you have gluten-free options?)\n- \"Soy alérgico a...\" (I'm allergic to...)\n\n**Paying:**\n- \"La cuenta, por favor\" (The check, please)\n- \"¿Aceptan tarjetas?\" (Do you accept cards?)\n- \"¿Está incluida la propina?\" (Is tip included?)\n\n**Practice dialogue:**\nMe: Buenos días, una mesa para uno, por favor.\nWaiter: Claro, por aquí.\nMe: ¿Qué recomienda de plato principal?\nWaiter: La paella es excelente.\nMe: Perfecto, una paella por favor.\n\nReady for my Spain trip! 🇪🇸",
+      "tags": ["spanish", "conversation", "restaurant", "travel"],
+      "updatedAt": 1730500000000
+    },
+    {
+      "id": "chat_030",
+      "title": "Urban gardening on apartment balcony",
+      "category": "HOBBY",
+      "status": "active",
+      "link": "https://gemini.google.com/app/garden123balcony",
+      "notes": "Planning my small balcony garden:\n\n**Space:** 6x3 feet balcony, faces east (morning sun)\n\n**Good for beginners:**\n- **Herbs:** Basil, mint, cilantro (easy + useful)\n- **Tomatoes:** Cherry tomatoes in pots\n- **Lettuce:** Grows fast, multiple harvests\n- **Peppers:** Compact plants, productive\n\n**Setup:**\n- Vertical planters (maximize space)\n- Self-watering pots (forgiving)\n- Mix: herbs + 2 tomato plants + lettuce\n\n**Care requirements:**\n- Water: Daily in summer (or self-watering)\n- Fertilize: Every 2 weeks (liquid)\n- Harvest: Regular picking encourages growth\n\n**Shopping list:**\n- 5x 5-gallon pots ($40)\n- Potting soil ($20)\n- Seeds/seedlings ($30)\n- Fertilizer ($15)\n\n**Timeline:**\n- Start seeds indoors now\n- Transplant in 3 weeks\n- First harvest in 6-8 weeks\n\nExcited to grow my own food! 🌱",
+      "tags": ["gardening", "urban-farming", "balcony", "beginner"],
+      "updatedAt": 1730900000000
+    }
+  ],
+  "categoryFilter": "ALL",
+  "statusFilter": "ALL",
+  "searchQuery": "",
+  "viewMode": "grid",
+  "darkMode": true
+}
